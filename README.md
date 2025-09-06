@@ -1,6 +1,6 @@
 # 🏨 Hotel Operations Management System
 
-> A comprehensive, mobile-first hotel operations platform inspired by Visual Matrix MOP that streamlines housekeeping and maintenance workflows, inspections, preventive maintenance, and reporting.
+> A comprehensive, mobile-first hotel operations platform inspired by Visual Matrix MOP that streamlines housekeeping workflows, inspections, and KPI reporting.
 
 ## ✨ Features
 
