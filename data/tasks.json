@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Clean Room 201",
+    "description": "Daily cleaning assignment for room 201",
+    "type": "cleaning",
+    "priority": "medium",
+    "roomId": "5161149a-60c0-4154-b33b-6e3fc5feb305",
+    "assigneeId": "5f10d969-eac5-4a1f-af20-35e1648c8024",
+    "createdById": "be940a5c-2175-47c2-960b-e77288404f77",
+    "id": "da31c663-8082-47df-908a-90850ce855fd",
+    "status": null,
+    "dueAt": null,
+    "startedAt": null,
+    "pausedAt": null,
+    "finishedAt": null,
+    "verifiedById": null,
+    "notes": null,
+    "isDeleted": false,
+    "createdAt": "2025-09-06T03:54:10.117Z",
+    "updatedAt": "2025-09-06T03:54:10.117Z"
+  }
+]
