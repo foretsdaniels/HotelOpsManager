@@ -84,6 +84,9 @@ export class DailyResetService {
       // Perform room status reset
       await this.resetRoomStatuses();
 
+      // Reset room assignments
+      await this.resetRoomAssignments();
+
       // Clean up old completed tasks
       await this.cleanupCompletedTasks();
 
@@ -286,12 +289,32 @@ export class DailyResetService {
     }
   }
 
+  private async resetRoomAssignments(): Promise<void> {
+    console.log(`[DailyReset] Resetting room assignments`);
+
+    try {
+      const assignments = await storage.listRoomAssignments();
+      let resetCount = 0;
+
+      for (const assignment of assignments) {
+        await storage.deleteRoomAssignment(assignment.roomId, assignment.userId);
+        resetCount++;
+      }
+
+      console.log(`[DailyReset] Reset ${resetCount} room assignments`);
+    } catch (error) {
+      console.error(`[DailyReset] Error resetting room assignments:`, error);
+      throw error;
+    }
+  }
+
   // Manual reset trigger (for testing or manual operations)
   public async triggerManualReset(): Promise<DailyResetReport> {
     const today = new Date().toISOString().split('T')[0];
     const report = await this.generateDailyReport(today);
     await this.saveDailyReport(report);
     await this.resetRoomStatuses();
+    await this.resetRoomAssignments();
     await this.cleanupCompletedTasks();
     
     console.log(`[DailyReset] Manual reset completed for ${today}`);
