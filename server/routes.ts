@@ -356,6 +356,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Room Status Update Route
+  app.patch("/api/rooms/:id/status", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { status, notes } = req.body;
+      const room = await storage.updateRoom(req.params.id, { 
+        status, 
+        updatedAt: new Date() 
+      });
+      
+      if (!room) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+
+      // Optionally log status change or create task/comment
+      if (notes) {
+        await storage.createRoomComment({
+          roomId: req.params.id,
+          userId: req.user!.userId,
+          comment: `Status changed to ${status.toUpperCase()}: ${notes}`,
+          priority: "low",
+          isResolved: false,
+        });
+      }
+
+      res.json(room);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Room Comments Routes
   app.get("/api/room-comments", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {

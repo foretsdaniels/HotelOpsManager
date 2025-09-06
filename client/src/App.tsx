@@ -15,6 +15,7 @@ import Reports from "@/pages/Reports";
 import PanicLog from "@/pages/PanicLog";
 import Settings from "@/pages/Settings";
 import FrontDesk from "@/pages/FrontDesk";
+import RoomStatus from "@/pages/RoomStatus";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -64,6 +65,11 @@ function Router() {
       <Route path="/front-desk" component={() => (
         <Layout>
           <FrontDesk />
+        </Layout>
+      )} />
+      <Route path="/room-status" component={() => (
+        <Layout>
+          <RoomStatus />
         </Layout>
       )} />
       <Route component={NotFound} />

@@ -55,6 +55,12 @@ const navigationItems = [
     roles: ["site_admin", "front_desk_manager"],
   },
   {
+    href: "/room-status",
+    label: "Room Status",
+    icon: CheckSquare,
+    roles: ["site_admin", "head_housekeeper", "room_attendant", "maintenance", "front_desk_manager"],
+  },
+  {
     href: "/reports",
     label: "Reports",
     icon: BarChart3,

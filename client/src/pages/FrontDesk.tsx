@@ -12,6 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import RoomComments from "@/components/RoomComments";
+import RoomStatusSelector from "@/components/RoomStatusSelector";
 import { 
   Hotel, 
   Users, 
@@ -76,6 +77,10 @@ export default function FrontDesk() {
   // Room status counts
   const statusCounts = {
     dirty: roomsWithStatus.filter((r: any) => r.status === "dirty").length,
+    ready: roomsWithStatus.filter((r: any) => r.status === "ready").length,
+    roll: roomsWithStatus.filter((r: any) => r.status === "roll").length,
+    out: roomsWithStatus.filter((r: any) => r.status === "out").length,
+    cleanInspected: roomsWithStatus.filter((r: any) => r.status === "clean_inspected").length,
     clean: roomsWithStatus.filter((r: any) => r.status === "clean").length,
     outOfOrder: roomsWithStatus.filter((r: any) => r.status === "out_of_order").length,
     maintenance: roomsWithStatus.filter((r: any) => r.status === "maintenance").length,
@@ -118,6 +123,10 @@ export default function FrontDesk() {
   const getRoomStatusColor = (status: string) => {
     switch (status) {
       case "clean": return "bg-green-100 text-green-800 border-green-200";
+      case "clean_inspected": return "bg-green-100 text-green-800 border-green-200";
+      case "ready": return "bg-blue-100 text-blue-800 border-blue-200";
+      case "roll": return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "out": return "bg-gray-100 text-gray-800 border-gray-200";
       case "dirty": return "bg-red-100 text-red-800 border-red-200";
       case "out_of_order": return "bg-gray-100 text-gray-800 border-gray-200";
       case "maintenance": return "bg-yellow-100 text-yellow-800 border-yellow-200";
@@ -128,6 +137,10 @@ export default function FrontDesk() {
   const getRoomStatusIcon = (status: string) => {
     switch (status) {
       case "clean": return <CheckCircle className="h-4 w-4" />;
+      case "clean_inspected": return <CheckCircle className="h-4 w-4" />;
+      case "ready": return <CheckCircle className="h-4 w-4" />;
+      case "roll": return <Clock className="h-4 w-4" />;
+      case "out": return <Building className="h-4 w-4" />;
       case "dirty": return <AlertTriangle className="h-4 w-4" />;
       case "out_of_order": return <Building className="h-4 w-4" />;
       case "maintenance": return <Clock className="h-4 w-4" />;
@@ -176,15 +189,15 @@ export default function FrontDesk() {
       </div>
 
       {/* Dashboard Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Dirty Rooms</p>
-                <p className="text-2xl font-bold">{statusCounts.dirty}</p>
+                <p className="text-sm text-muted-foreground">READY</p>
+                <p className="text-2xl font-bold">{statusCounts.ready}</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <CheckCircle className="h-8 w-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
@@ -193,10 +206,46 @@ export default function FrontDesk() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Clean Rooms</p>
-                <p className="text-2xl font-bold">{statusCounts.clean}</p>
+                <p className="text-sm text-muted-foreground">ROLL</p>
+                <p className="text-2xl font-bold">{statusCounts.roll}</p>
+              </div>
+              <Clock className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">OUT</p>
+                <p className="text-2xl font-bold">{statusCounts.out}</p>
+              </div>
+              <Building className="h-8 w-8 text-gray-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Clean & Inspected</p>
+                <p className="text-2xl font-bold">{statusCounts.cleanInspected}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Dirty</p>
+                <p className="text-2xl font-bold">{statusCounts.dirty}</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
           </CardContent>
         </Card>
@@ -209,18 +258,6 @@ export default function FrontDesk() {
                 <p className="text-2xl font-bold">{assignmentCounts.assigned}</p>
               </div>
               <Users className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Unassigned</p>
-                <p className="text-2xl font-bold">{assignmentCounts.unassigned}</p>
-              </div>
-              <Clock className="h-8 w-8 text-amber-500" />
             </div>
           </CardContent>
         </Card>
@@ -262,7 +299,7 @@ export default function FrontDesk() {
                             <span className="font-semibold">Room {room.number}</span>
                           </div>
                           <Badge variant="outline">{room.type}</Badge>
-                          <Badge variant="secondary">{room.status.replace('_', ' ')}</Badge>
+                          <RoomStatusSelector room={room} showButton={false} compact={true} />
                           {room.assignedUser && (
                             <div className="flex items-center gap-1 text-sm">
                               <Users className="h-3 w-3" />
