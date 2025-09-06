@@ -53,7 +53,10 @@ export default function FrontDesk() {
 
     const unsubscribeComments = subscribe('user_notification', (message) => {
       if (message.data.comment || message.data.commentId) {
+        // Invalidate room comments to refresh the Room Notes tab
         queryClient.invalidateQueries({ queryKey: ["/api/room-comments"] });
+        // Also refresh rooms to update comment counts
+        queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
       }
     });
 
