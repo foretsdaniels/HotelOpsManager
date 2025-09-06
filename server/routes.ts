@@ -10,6 +10,7 @@ import { generateToken, hashPassword, comparePassword, canReceivePanicAlerts } f
 import { authenticateToken, requireRole, requireAuth, type AuthenticatedRequest } from "./middleware";
 import { ObjectStorageService } from "./objectStorage";
 import { emailService } from "./emailService";
+import { websocketService } from "./websocketService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
