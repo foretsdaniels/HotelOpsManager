@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import StatusChip from "@/components/StatusChip";
 import { apiRequest, invalidateQueries, uploadFile } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { DoorOpen, ClipboardList, Plus, Check, X, Camera, MessageSquare, PenTool } from "lucide-react";
+import { DoorOpen, ClipboardList, Plus, Check, X, Camera, MessageSquare, PenTool, Eye, Trash2, Archive, MoreHorizontal } from "lucide-react";
 
 interface ChecklistItem {
   id: string;
@@ -33,6 +35,12 @@ export default function Inspections() {
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [notes, setNotes] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedInspection, setSelectedInspection] = useState<any>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const [showInspectionDetails, setShowInspectionDetails] = useState(false);
+  const [showRoomStatusDialog, setShowRoomStatusDialog] = useState(false);
+  const [completedInspection, setCompletedInspection] = useState<any>(null);
 
   const { data: inspections = [], isLoading } = useQuery({
     queryKey: ["/api/inspections"],
@@ -40,6 +48,53 @@ export default function Inspections() {
 
   const { data: rooms = [] } = useQuery({
     queryKey: ["/api/rooms"],
+  });
+
+  // Delete inspection mutation
+  const deleteInspectionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/inspections/${id}`);
+    },
+    onSuccess: () => {
+      invalidateQueries(["/api/inspections"]);
+      toast({ title: "Inspection deleted successfully" });
+      setShowDeleteDialog(false);
+      setSelectedInspection(null);
+    },
+    onError: () => {
+      toast({ title: "Failed to delete inspection", variant: "destructive" });
+    },
+  });
+
+  // Archive inspection mutation
+  const archiveInspectionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("PATCH", `/api/inspections/${id}`, { archived: true });
+    },
+    onSuccess: () => {
+      invalidateQueries(["/api/inspections"]);
+      toast({ title: "Inspection archived successfully" });
+      setShowArchiveDialog(false);
+      setSelectedInspection(null);
+    },
+    onError: () => {
+      toast({ title: "Failed to archive inspection", variant: "destructive" });
+    },
+  });
+
+  // Update room status mutation
+  const updateRoomStatusMutation = useMutation({
+    mutationFn: async ({ roomId, status }: { roomId: string; status: string }) => {
+      await apiRequest("PATCH", `/api/rooms/${roomId}/status`, { status });
+    },
+    onSuccess: () => {
+      toast({ title: "Room status updated to Clean & Inspected" });
+      setShowRoomStatusDialog(false);
+      setCompletedInspection(null);
+    },
+    onError: () => {
+      toast({ title: "Failed to update room status", variant: "destructive" });
+    },
   });
 
   const createInspectionMutation = useMutation({
@@ -181,8 +236,15 @@ export default function Inspections() {
       });
       
       invalidateQueries(["/api/inspections"]);
-      setActiveInspection(null);
-      setChecklist([]);
+      
+      // Store completed inspection for room status dialog
+      if (activeInspection.roomId && passFail) {
+        setCompletedInspection(activeInspection);
+        setShowRoomStatusDialog(true);
+      } else {
+        setActiveInspection(null);
+        setChecklist([]);
+      }
       
       toast({
         title: "Inspection Completed",
@@ -427,6 +489,47 @@ export default function Inspections() {
                       {inspection.passFail !== null && (
                         <StatusChip status={inspection.passFail ? "completed" : "failed"} />
                       )}
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" data-testid={`inspection-actions-${inspection.id}`}>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              setSelectedInspection(inspection);
+                              setShowInspectionDetails(true);
+                            }}
+                            data-testid={`view-inspection-${inspection.id}`}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              setSelectedInspection(inspection);
+                              setShowArchiveDialog(true);
+                            }}
+                            data-testid={`archive-inspection-${inspection.id}`}
+                          >
+                            <Archive className="h-4 w-4 mr-2" />
+                            Archive
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              setSelectedInspection(inspection);
+                              setShowDeleteDialog(true);
+                            }}
+                            className="text-red-600"
+                            data-testid={`delete-inspection-${inspection.id}`}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 ))}
@@ -512,6 +615,150 @@ export default function Inspections() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Room Status Update Dialog */}
+      <AlertDialog open={showRoomStatusDialog} onOpenChange={setShowRoomStatusDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Room Status</AlertDialogTitle>
+            <AlertDialogDescription>
+              The inspection passed! Would you like to update the room status to "Clean & Inspected"?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setActiveInspection(null);
+                setChecklist([]);
+                setCompletedInspection(null);
+              }}
+            >
+              No, Keep Current Status
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (completedInspection?.roomId) {
+                  updateRoomStatusMutation.mutate({
+                    roomId: completedInspection.roomId,
+                    status: "clean_inspected"
+                  });
+                  setActiveInspection(null);
+                  setChecklist([]);
+                }
+              }}
+            >
+              Yes, Update to Clean & Inspected
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Inspection Details Dialog */}
+      <Dialog open={showInspectionDetails} onOpenChange={setShowInspectionDetails}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedInspection?.kind === "room" ? "Room" : "Process"} Inspection Details
+              {selectedInspection?.roomId && (
+                <span className="ml-2 text-muted-foreground">
+                  - Room {rooms.find((r: any) => r.id === selectedInspection.roomId)?.number}
+                </span>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              Completed on {selectedInspection && new Date(selectedInspection.createdAt).toLocaleDateString()} at {selectedInspection && new Date(selectedInspection.createdAt).toLocaleTimeString()}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedInspection && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Score:</span>
+                    <span className="font-semibold ml-2">{selectedInspection.score || "N/A"}%</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Status:</span>
+                    <Badge className="ml-2" variant={selectedInspection.passFail ? "default" : "destructive"}>
+                      {selectedInspection.passFail ? "Passed" : "Failed"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              {selectedInspection.checklist && (
+                <div className="space-y-2">
+                  <h3 className="font-medium">Checklist Items</h3>
+                  {selectedInspection.checklist.map((item: any) => (
+                    <div key={item.id} className="p-3 border rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-4 h-4 rounded-full ${item.passed ? 'bg-green-500' : item.passed === false ? 'bg-red-500' : 'bg-gray-300'}`} />
+                          <span className="font-medium">{item.title}</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {item.passed ? "Passed" : item.passed === false ? "Failed" : "Not checked"}
+                        </span>
+                      </div>
+                      {item.notes && (
+                        <p className="mt-2 text-sm text-muted-foreground">{item.notes}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Inspection</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this inspection? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (selectedInspection) {
+                  deleteInspectionMutation.mutate(selectedInspection.id);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Inspection</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive this inspection? It will be moved to the archived section.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (selectedInspection) {
+                  archiveInspectionMutation.mutate(selectedInspection.id);
+                }
+              }}
+            >
+              Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
