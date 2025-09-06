@@ -25,13 +25,6 @@ export default function Dashboard() {
     queryKey: ["/api/tasks"],
   });
 
-  const { data: workOrders = [] } = useQuery({
-    queryKey: ["/api/workorders"],
-  });
-
-  const { data: pmInstances = [] } = useQuery({
-    queryKey: ["/api/pm/upcoming"],
-  });
 
   const { data: inspections = [] } = useQuery({
     queryKey: ["/api/inspections"],
@@ -39,8 +32,6 @@ export default function Dashboard() {
 
   // Calculate KPI metrics
   const myTasks = tasks.filter((task: any) => task.status !== "completed").length;
-  const openWOs = workOrders.filter((wo: any) => wo.status !== "completed").length;
-  const upcomingPMs = pmInstances.filter((pm: any) => pm.status === "pending").length;
   const inspectionsPending = inspections.filter((inspection: any) => !inspection.signedAt).length;
 
   // Mock recent activity data
@@ -54,10 +45,10 @@ export default function Dashboard() {
     },
     {
       id: "2", 
-      description: "Work Order #1247 created for Room 305 AC repair",
+      description: "New special task created for banquet hall setup",
       timestamp: "15 minutes ago",
       status: "pending",
-      type: "workorder",
+      type: "task",
     },
     {
       id: "3",
@@ -74,8 +65,6 @@ export default function Dashboard() {
     }
     
     switch (type) {
-      case "workorder":
-        return <Wrench className="h-4 w-4 text-warning" />;
       case "inspection":
         return <ClipboardCheck className="h-4 w-4 text-blue-500" />;
       default:
@@ -86,7 +75,6 @@ export default function Dashboard() {
   const quickActions = [
     { icon: Plus, label: "New Task", action: "createTask" },
     { icon: ClipboardList, label: "Inspection", action: "createInspection" },
-    { icon: Settings, label: "Work Order", action: "createWorkOrder" },
     { icon: Search, label: "Lost Item", action: "reportLostItem" },
     { icon: BarChart3, label: "Reports", action: "viewReports" },
     { icon: UserPlus, label: "RA Monitor", action: "raMonitor" },
@@ -95,24 +83,12 @@ export default function Dashboard() {
   return (
     <div className="p-4 space-y-6" data-testid="dashboard">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <KPICard
           title="My Tasks"
           value={myTasks}
           icon={CheckSquare}
           trend={{ value: "2", direction: "up", label: "since yesterday" }}
-        />
-        <KPICard
-          title="Open WOs"
-          value={openWOs}
-          icon={Wrench}
-          trend={{ value: "0", direction: "neutral", label: "since yesterday" }}
-        />
-        <KPICard
-          title="Upcoming PMs"
-          value={upcomingPMs}
-          icon={CalendarCheck}
-          trend={{ value: "", direction: "neutral", label: "Due this week" }}
         />
         <KPICard
           title="Inspections"

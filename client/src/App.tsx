@@ -9,7 +9,6 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Tasks from "@/pages/Tasks";
 import Inspections from "@/pages/Inspections";
-import Maintenance from "@/pages/Maintenance";
 import RAMonitor from "@/pages/RAMonitor";
 import Reports from "@/pages/Reports";
 import PanicLog from "@/pages/PanicLog";
@@ -36,11 +35,6 @@ function Router() {
       <Route path="/inspections" component={() => (
         <Layout>
           <Inspections />
-        </Layout>
-      )} />
-      <Route path="/maintenance" component={() => (
-        <Layout>
-          <Maintenance />
         </Layout>
       )} />
       <Route path="/ra-monitor" component={() => (

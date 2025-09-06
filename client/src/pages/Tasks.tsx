@@ -71,10 +71,15 @@ export default function Tasks() {
   return (
     <div className="p-4 space-y-6" data-testid="tasks-page">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Tasks</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Special Tasks</h1>
+          <p className="text-muted-foreground">
+            Manage one-time, non-recurring special tasks outside normal room operations
+          </p>
+        </div>
         <Button data-testid="create-task-button">
           <Plus className="h-4 w-4 mr-2" />
-          New Task
+          New Special Task
         </Button>
       </div>
 
@@ -115,9 +120,10 @@ export default function Tasks() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="cleaning">Cleaning</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                  <SelectItem value="cleaning">Special Cleaning</SelectItem>
                   <SelectItem value="alert">Alert</SelectItem>
+                  <SelectItem value="setup">Setup/Event</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -142,7 +148,7 @@ export default function Tasks() {
               </div>
               <Button className="mt-4" data-testid="create-first-task">
                 <Plus className="h-4 w-4 mr-2" />
-                Create First Task
+                Create First Special Task
               </Button>
             </CardContent>
           </Card>

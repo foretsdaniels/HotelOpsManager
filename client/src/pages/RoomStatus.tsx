@@ -60,7 +60,7 @@ export default function RoomStatus() {
       return true;
     }
     
-    // Room attendants and maintenance only see their assigned rooms
+    // Room attendants only see their assigned rooms
     const roomTasks = tasks.filter((task: any) => 
       task.roomId === room.id && 
       !task.isDeleted && 
@@ -112,7 +112,7 @@ export default function RoomStatus() {
   });
 
   // Check if user can access this page
-  if (!user?.role || !["site_admin", "head_housekeeper", "room_attendant", "maintenance", "front_desk_manager"].includes(user.role)) {
+  if (!user?.role || !["site_admin", "head_housekeeper", "room_attendant", "front_desk_manager"].includes(user.role)) {
     return (
       <div className="p-4">
         <Card>
