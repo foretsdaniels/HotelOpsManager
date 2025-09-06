@@ -9,5 +9,27 @@
     "id": "be940a5c-2175-47c2-960b-e77288404f77",
     "createdAt": "2025-09-06T02:17:57.564Z",
     "updatedAt": "2025-09-06T02:17:57.564Z"
+  },
+  {
+    "name": "Front Desk",
+    "email": "FD@buccinn.com",
+    "role": "front_desk_manager",
+    "phone": "",
+    "canReceivePanicAlerts": true,
+    "passwordHash": "$2b$12$malWsdIa5SuhBdyfjjMrQuJzrfAxdIC/TTvm37UdlRAHi8o37dA2q",
+    "id": "a87f8e2c-b421-462f-9eb7-23c611ee55bb",
+    "createdAt": "2025-09-06T06:34:07.250Z",
+    "updatedAt": "2025-09-06T06:34:07.250Z"
+  },
+  {
+    "name": "lane",
+    "email": "lane@buccinn.com",
+    "role": "room_attendant",
+    "phone": "",
+    "canReceivePanicAlerts": false,
+    "passwordHash": "$2b$12$HZ/OhA4k25wVzwaFGHZlfeFzqnMfUhtQU0RY1bWmyYUTiMGe7bahW",
+    "id": "51760e15-50d3-4a3f-9c8b-a9d470838da4",
+    "createdAt": "2025-09-06T06:34:50.949Z",
+    "updatedAt": "2025-09-06T06:34:50.949Z"
   }
 ]
