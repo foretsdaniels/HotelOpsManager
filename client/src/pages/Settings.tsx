@@ -43,6 +43,7 @@ export default function Settings() {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [editingRoom, setEditingRoom] = useState<any>(null);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [editingUserPassword, setEditingUserPassword] = useState("");
   const [inspectionItems, setInspectionItems] = useState<any[]>([
     { id: "1", title: "Bed linens clean and properly arranged", description: "Check for stains, wrinkles, and proper hospital corners", type: "room" },
     { id: "2", title: "Bathroom cleanliness", description: "Toilet, shower, sink, mirror, and floor must be spotless", type: "room" },
@@ -776,7 +777,10 @@ export default function Settings() {
 
       {/* Edit User Modal */}
       {editingUser && (
-        <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+        <Dialog open={!!editingUser} onOpenChange={() => {
+          setEditingUser(null);
+          setEditingUserPassword("");
+        }}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit User</DialogTitle>
@@ -828,6 +832,17 @@ export default function Settings() {
                   data-testid="edit-user-phone-input"
                 />
               </div>
+              <div>
+                <Label htmlFor="edit-user-password">New Password (leave blank to keep current)</Label>
+                <Input
+                  id="edit-user-password"
+                  type="password"
+                  value={editingUserPassword}
+                  onChange={(e) => setEditingUserPassword(e.target.value)}
+                  placeholder="Enter new password (optional)"
+                  data-testid="edit-user-password-input"
+                />
+              </div>
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -840,14 +855,23 @@ export default function Settings() {
               </div>
               <div className="flex gap-2 pt-4">
                 <Button
-                  onClick={() => updateUserMutation.mutate({ id: editingUser.id, updates: editingUser })}
+                  onClick={() => {
+                    const updates = { ...editingUser };
+                    if (editingUserPassword) {
+                      updates.password = editingUserPassword;
+                    }
+                    updateUserMutation.mutate({ id: editingUser.id, updates });
+                  }}
                   disabled={!editingUser.name || !editingUser.email || !editingUser.role || updateUserMutation.isPending}
                   data-testid="update-user-button"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {updateUserMutation.isPending ? "Updating..." : "Update User"}
                 </Button>
-                <Button variant="outline" onClick={() => setEditingUser(null)}>
+                <Button variant="outline" onClick={() => {
+                  setEditingUser(null);
+                  setEditingUserPassword("");
+                }}>
                   <X className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>

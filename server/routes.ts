@@ -531,6 +531,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/users", authenticateToken, requireRole(["site_admin"]), async (req, res) => {
+    try {
+      const { password, ...userData } = req.body;
+      
+      if (!password) {
+        return res.status(400).json({ error: "Password is required" });
+      }
+
+      const passwordHash = await hashPassword(password);
+      const userWithHash = { ...userData, passwordHash };
+      
+      const user = await storage.createUser(userWithHash);
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      res.status(201).json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/users/:id", authenticateToken, requireRole(["site_admin"]), async (req, res) => {
+    try {
+      const { password, ...updates } = req.body;
+      let userUpdates = { ...updates };
+      
+      // If password is provided, hash it
+      if (password) {
+        const passwordHash = await hashPassword(password);
+        userUpdates.passwordHash = passwordHash;
+      }
+      
+      const user = await storage.updateUser(req.params.id, userUpdates);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/users/:id", authenticateToken, requireRole(["site_admin"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      // Prevent self-deletion
+      if (req.params.id === req.user?.userId) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+      
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Delete user from storage (will need to implement this method)
+      await storage.deleteUser(req.params.id);
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Object storage routes for file uploads
   app.post("/api/objects/upload", authenticateToken, async (req, res) => {
     try {
