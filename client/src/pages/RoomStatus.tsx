@@ -21,7 +21,7 @@ import {
   DoorOpen,
   Sparkles
 } from "lucide-react";
-import type { Room, User } from "@shared/schema";
+import type { Room, User, RoomAssignment } from "@shared/schema";
 
 const STATUS_FILTERS = [
   { value: "all", label: "All Rooms", icon: Hotel },
@@ -54,6 +54,10 @@ export default function RoomStatus() {
     queryKey: ["/api/tasks"],
   });
 
+  const { data: roomAssignments = [] } = useQuery<RoomAssignment[]>({
+    queryKey: ["/api/room-assignments"],
+  });
+
   // Filter rooms based on user role and assignment
   const userRooms = rooms.filter((room: Room) => {
     // Admin, head housekeeper, and front desk manager see all rooms
@@ -62,14 +66,8 @@ export default function RoomStatus() {
     }
     
     // Room attendants only see their assigned rooms
-    const roomTasks = tasks.filter((task: any) => 
-      task.roomId === room.id && 
-      !task.isDeleted && 
-      task.assigneeId === user?.id &&
-      (task.status === "pending" || task.status === "in_progress")
-    );
-    
-    return roomTasks.length > 0;
+    const assignment = roomAssignments.find((a: RoomAssignment) => a.roomId === room.id && a.userId === user?.id);
+    return !!assignment;
   });
 
   // Filter and search logic
@@ -97,18 +95,13 @@ export default function RoomStatus() {
 
   // Get room assignments
   const roomsWithAssignments = filteredRooms.map((room: Room) => {
-    const roomTasks = tasks.filter((task: any) => 
-      task.roomId === room.id && 
-      !task.isDeleted && 
-      (task.status === "pending" || task.status === "in_progress")
-    );
-    const assignedUser = roomTasks.length > 0 ? 
-      users.find((user: User) => user.id === roomTasks[0].assigneeId) : null;
+    const assignment = roomAssignments.find((a: RoomAssignment) => a.roomId === room.id);
+    const assignedUser = assignment ? users.find((user: User) => user.id === assignment.userId) : null;
     
     return {
       ...room,
       assignedUser,
-      activeTask: roomTasks[0] || null,
+      assignment,
     };
   });
 
