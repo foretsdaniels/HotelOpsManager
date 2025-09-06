@@ -21,12 +21,11 @@ import {
 import { ActivityItem } from "@/types";
 
 export default function Dashboard() {
-  const { data: tasks = [] } = useQuery({
+  const { data: tasks = [] } = useQuery<any[]>({
     queryKey: ["/api/tasks"],
   });
 
-
-  const { data: inspections = [] } = useQuery({
+  const { data: inspections = [] } = useQuery<any[]>({
     queryKey: ["/api/inspections"],
   });
 

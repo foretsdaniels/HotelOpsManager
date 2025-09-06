@@ -31,7 +31,6 @@ const USER_ROLES = [
   { value: "site_admin", label: "Site Administrator" },
   { value: "head_housekeeper", label: "Head Housekeeper" },
   { value: "room_attendant", label: "Room Attendant" },
-  { value: "maintenance", label: "Maintenance" },
   { value: "front_desk_manager", label: "Front Desk Manager" },
 ];
 
