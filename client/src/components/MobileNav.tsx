@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { 
   CheckSquare, 
@@ -12,23 +13,31 @@ const mobileNavItems = [
     label: "Room Status",
     shortLabel: "Rooms",
     icon: CheckSquare,
+    roles: ["site_admin", "head_housekeeper", "room_attendant", "front_desk_manager"],
   },
   {
     href: "/tasks",
     label: "Special Tasks",
     shortLabel: "Tasks",
     icon: ClipboardCheck,
+    roles: ["site_admin", "head_housekeeper", "room_attendant", "front_desk_manager"],
   },
   {
     href: "/inspections",
     label: "Inspections",
     shortLabel: "Inspect",
     icon: BarChart3,
+    roles: ["site_admin", "head_housekeeper", "front_desk_manager"],
   },
 ];
 
 export default function MobileNav() {
   const [location, navigate] = useLocation();
+  const { user } = useAuth();
+
+  const hasAccess = (requiredRoles: string[]) => {
+    return user?.role && requiredRoles.includes(user.role);
+  };
 
   const isActive = (href: string) => {
     return location === href || (href !== "/" && location.startsWith(href));
@@ -38,6 +47,8 @@ export default function MobileNav() {
     <nav className="mobile-nav lg:hidden">
       <div className="flex items-center justify-around py-2">
         {mobileNavItems.map((item) => {
+          if (!hasAccess(item.roles)) return null;
+          
           const Icon = item.icon;
           const active = isActive(item.href);
           

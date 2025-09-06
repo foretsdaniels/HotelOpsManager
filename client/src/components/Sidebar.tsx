@@ -28,7 +28,7 @@ const navigationItems = [
     href: "/",
     label: "Dashboard",
     icon: LayoutDashboard,
-    roles: ["site_admin", "head_housekeeper", "room_attendant", "front_desk_manager"],
+    roles: ["site_admin", "head_housekeeper", "front_desk_manager"],
   },
   {
     href: "/tasks",
@@ -40,7 +40,7 @@ const navigationItems = [
     href: "/inspections",
     label: "Inspections",
     icon: ClipboardCheck,
-    roles: ["site_admin", "head_housekeeper"],
+    roles: ["site_admin", "head_housekeeper", "front_desk_manager"],
   },
   {
     href: "/ra-monitor",
