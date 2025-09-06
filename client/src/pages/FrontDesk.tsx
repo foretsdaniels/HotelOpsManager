@@ -60,11 +60,13 @@ export default function FrontDesk() {
     const unsubscribeRoomAssignments = subscribe('room_assignment_created', () => {
       queryClient.invalidateQueries({ queryKey: ["/api/room-assignments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
     });
 
     const unsubscribeRoomAssignmentDeleted = subscribe('room_assignment_deleted', () => {
       queryClient.invalidateQueries({ queryKey: ["/api/room-assignments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
     });
 
     return () => {
