@@ -250,6 +250,106 @@ export class MemStorage implements IStorage {
       
       await this.saveData('rooms');
       console.log('Demo rooms seeded successfully');
+
+      // Get user IDs for demo data
+      const adminUser = Array.from(this.data.users.values()).find(u => u.role === 'site_admin');
+      const housekeeperUser = Array.from(this.data.users.values()).find(u => u.role === 'head_housekeeper');
+      const maintenanceUser = Array.from(this.data.users.values()).find(u => u.role === 'maintenance');
+      const raUser = Array.from(this.data.users.values()).find(u => u.role === 'room_attendant');
+      const roomIds = Array.from(this.data.rooms.keys());
+
+      // Create demo tasks
+      const demoTasks = [
+        {
+          title: "Clean Room 101",
+          description: "Standard housekeeping service required",
+          type: "housekeeping",
+          status: "pending" as const,
+          priority: "medium" as const,
+          roomId: roomIds[0],
+          assigneeId: raUser?.id,
+        },
+        {
+          title: "Deep Clean Room 201",
+          description: "Checkout cleaning with extra attention to bathroom",
+          type: "housekeeping", 
+          status: "in_progress" as const,
+          priority: "high" as const,
+          roomId: roomIds[2],
+          assigneeId: raUser?.id,
+        },
+        {
+          title: "Maintenance Check - HVAC",
+          description: "Monthly HVAC filter inspection and replacement",
+          type: "maintenance",
+          status: "pending" as const,
+          priority: "low" as const,
+          assigneeId: maintenanceUser?.id,
+        }
+      ];
+
+      for (const taskData of demoTasks) {
+        const id = randomUUID();
+        const task: Task = {
+          ...taskData,
+          id,
+          description: taskData.description,
+          status: taskData.status,
+          priority: taskData.priority,
+          roomId: taskData.roomId || null,
+          assigneeId: taskData.assigneeId || null,
+          dueAt: null,
+          startedAt: null,
+          completedAt: null,
+          isDeleted: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        this.data.tasks.set(id, task);
+      }
+      await this.saveData('tasks');
+      console.log('Demo tasks seeded successfully');
+
+      // Create demo work orders
+      const demoWorkOrders = [
+        {
+          title: "Fix Leaky Faucet - Room 202",
+          description: "Guest reported dripping bathroom faucet",
+          priority: "medium" as const,
+          status: "pending" as const,
+          roomId: roomIds[3],
+          assigneeId: maintenanceUser?.id,
+        },
+        {
+          title: "Replace Light Bulb - Hallway",
+          description: "Burnt out light bulb in 2nd floor hallway",
+          priority: "low" as const,
+          status: "completed" as const,
+          assigneeId: maintenanceUser?.id,
+        }
+      ];
+
+      for (const woData of demoWorkOrders) {
+        const id = randomUUID();
+        const workOrder: WorkOrder = {
+          ...woData,
+          id,
+          description: woData.description,
+          status: woData.status,
+          priority: woData.priority,
+          roomId: woData.roomId || null,
+          assigneeId: woData.assigneeId || null,
+          parts: null,
+          laborMins: null,
+          slaDueAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          closedAt: woData.status === 'completed' ? new Date() : null,
+        };
+        this.data.workOrders.set(id, workOrder);
+      }
+      await this.saveData('workOrders');
+      console.log('Demo work orders seeded successfully');
     }
   }
 
