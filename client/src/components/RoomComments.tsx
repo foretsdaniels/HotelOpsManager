@@ -35,7 +35,8 @@ export default function RoomComments({ roomId, roomNumber }: RoomCommentsProps) 
   });
 
   const { data: comments = [], isLoading } = useQuery({
-    queryKey: ["/api/room-comments", { roomId }],
+    queryKey: ["/api/room-comments", roomId],
+    queryFn: () => apiRequest("GET", `/api/room-comments?roomId=${roomId}`),
   });
 
   const { data: users = [] } = useQuery({
@@ -53,7 +54,7 @@ export default function RoomComments({ roomId, roomNumber }: RoomCommentsProps) 
       apiRequest("POST", "/api/room-comments", { ...commentData, roomId }),
     onSuccess: () => {
       toast({ title: "Comment added successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/room-comments", { roomId }] });
+      queryClient.invalidateQueries({ queryKey: ["/api/room-comments", roomId] });
       setNewComment({ comment: "", priority: "low" });
       setShowAddComment(false);
     },
@@ -67,7 +68,7 @@ export default function RoomComments({ roomId, roomNumber }: RoomCommentsProps) 
       apiRequest("PATCH", `/api/room-comments/${commentId}`, { isResolved }),
     onSuccess: () => {
       toast({ title: "Comment updated successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/room-comments", { roomId }] });
+      queryClient.invalidateQueries({ queryKey: ["/api/room-comments", roomId] });
     },
     onError: () => {
       toast({ title: "Failed to update comment", variant: "destructive" });
@@ -79,7 +80,7 @@ export default function RoomComments({ roomId, roomNumber }: RoomCommentsProps) 
       apiRequest("DELETE", `/api/room-comments/${commentId}`),
     onSuccess: () => {
       toast({ title: "Comment deleted successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/room-comments", { roomId }] });
+      queryClient.invalidateQueries({ queryKey: ["/api/room-comments", roomId] });
     },
     onError: () => {
       toast({ title: "Failed to delete comment", variant: "destructive" });
