@@ -14,6 +14,11 @@ const statusConfig = {
 };
 
 export default function StatusChip({ status, className }: StatusChipProps) {
+  // Handle null or undefined status
+  if (!status) {
+    status = "pending";
+  }
+  
   const statusClass = statusConfig[status as keyof typeof statusConfig] || "status-pending";
   
   const displayStatus = status

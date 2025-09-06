@@ -75,6 +75,8 @@ export default function Dashboard() {
   
   // Add recent tasks to activity
   tasks.slice(0, 5).forEach((task: any) => {
+    if (!task || !task.id) return;
+    
     const taskDate = new Date(task.updatedAt || task.createdAt);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - taskDate.getTime()) / 60000);
@@ -91,21 +93,24 @@ export default function Dashboard() {
       }
     }
     
+    const taskStatus = task.status || 'pending';
     recentActivity.push({
       id: task.id,
-      description: task.status === 'completed' 
+      description: taskStatus === 'completed' 
         ? `${task.title} completed`
-        : task.status === 'in_progress'
+        : taskStatus === 'in_progress'
         ? `${task.title} in progress`
         : `${task.title} created`,
       timestamp,
-      status: task.status,
+      status: taskStatus,
       type: "task",
     });
   });
   
   // Add recent inspections to activity
   inspections.slice(0, 3).forEach((inspection: any) => {
+    if (!inspection || !inspection.id) return;
+    
     const inspectionDate = new Date(inspection.updatedAt || inspection.createdAt);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - inspectionDate.getTime()) / 60000);
@@ -138,7 +143,7 @@ export default function Dashboard() {
     const aMinutes = parseInt(a.timestamp) || 0;
     const bMinutes = parseInt(b.timestamp) || 0;
     return aMinutes - bMinutes;
-  }).slice(0, 5);
+  });
 
   const getActivityIcon = (type: string, status: string) => {
     if (status === "completed") {
