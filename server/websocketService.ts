@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { Server } from 'http';
 
 export interface WebSocketMessage {
-  type: 'room_status_changed' | 'task_assigned' | 'task_completed' | 'inspection_completed' | 'panic_alert' | 'user_notification';
+  type: 'room_status_changed' | 'task_assigned' | 'task_completed' | 'inspection_completed' | 'panic_alert' | 'user_notification' | 'room_assignment_created' | 'room_assignment_deleted';
   data: any;
   timestamp: string;
   userId?: string; // For user-specific notifications
