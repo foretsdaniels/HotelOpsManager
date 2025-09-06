@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --primary: hsl(210, 100%, 40%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(215, 25%, 27%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --accent: hsl(36, 100%, 48%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 84%, 37%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --ring: hsl(210, 100%, 40%);
+  --success: hsl(120, 61%, 34%);
+  --warning: hsl(43, 96%, 56%);
+  --radius: 0.75rem;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+.dark {
+  --background: hsl(222.2, 84%, 4.9%);
+  --foreground: hsl(210, 40%, 98%);
+  --card: hsl(222.2, 84%, 4.9%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --popover: hsl(222.2, 84%, 4.9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --primary: hsl(210, 100%, 50%);
+  --primary-foreground: hsl(222.2, 84%, 4.9%);
+  --secondary: hsl(217.2, 32.6%, 17.5%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217.2, 32.6%, 17.5%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --accent: hsl(36, 75%, 55%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 62.8%, 45.6%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217.2, 32.6%, 17.5%);
+  --input: hsl(217.2, 32.6%, 17.5%);
+  --ring: hsl(210, 100%, 50%);
+  --success: hsl(120, 50%, 45%);
+  --warning: hsl(43, 86%, 65%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer components {
+  .status-chip {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-pending { 
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200; 
+  }
+  
+  .status-in-progress { 
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200; 
+  }
+  
+  .status-completed { 
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200; 
+  }
+  
+  .status-failed { 
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200; 
+  }
+  
+  .status-paused { 
+    @apply bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200; 
+  }
+  
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .mobile-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40;
+  }
+  
+  .sidebar {
+    @apply fixed left-0 top-0 h-full w-64 bg-card border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-30;
+  }
+  
+  .sidebar.open {
+    @apply translate-x-0;
+  }
+  
+  .main-content {
+    @apply lg:ml-64 pb-16 lg:pb-0;
+  }
+  
+  .floating-action {
+    @apply fixed bottom-20 right-4 lg:bottom-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center z-30;
+  }
+}
