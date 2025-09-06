@@ -1,14 +1,14 @@
 [
   {
     "name": "Site Administrator",
-    "email": "buccinn19@gmail.com",
+    "email": "admin@hotel.com",
     "role": "site_admin",
-    "passwordHash": "$2b$12$DDQMOgaQdDbX0Je.h65nD.J.fqdM2n47anqTwtS0HZs1LMDNHRmQa",
-    "phone": "+1-850-927-2585",
+    "passwordHash": "$2b$12$eOmXEYpxifG8EbNZmGzzjeckuKKb/OYivyiuY93BZhpZVUZJsPIcK",
+    "phone": "+1-555-0101",
     "canReceivePanicAlerts": true,
     "id": "be940a5c-2175-47c2-960b-e77288404f77",
     "createdAt": "2025-09-06T02:17:57.564Z",
-    "updatedAt": "2025-09-06T06:39:14.205Z"
+    "updatedAt": "2025-09-06T02:17:57.564Z"
   },
   {
     "name": "Front Desk",
@@ -23,35 +23,13 @@
   },
   {
     "name": "lane",
-    "email": "lane",
+    "email": "lane@buccinn.com",
     "role": "room_attendant",
     "phone": "",
     "canReceivePanicAlerts": false,
     "passwordHash": "$2b$12$HZ/OhA4k25wVzwaFGHZlfeFzqnMfUhtQU0RY1bWmyYUTiMGe7bahW",
     "id": "51760e15-50d3-4a3f-9c8b-a9d470838da4",
     "createdAt": "2025-09-06T06:34:50.949Z",
-    "updatedAt": "2025-09-06T06:37:51.288Z"
-  },
-  {
-    "name": "Amy",
-    "email": "Amy",
-    "role": "room_attendant",
-    "phone": "",
-    "canReceivePanicAlerts": false,
-    "passwordHash": "$2b$12$5D.bhGLoVbtlCvdd7FGfI.neGppxRzELtfZOj.PnCGl0kgBsiPNvC",
-    "id": "858ebe37-cabd-4273-a151-af196bf32f74",
-    "createdAt": "2025-09-06T06:37:42.580Z",
-    "updatedAt": "2025-09-06T06:37:42.580Z"
-  },
-  {
-    "name": "Forest",
-    "email": "forest",
-    "role": "head_housekeeper",
-    "phone": "",
-    "canReceivePanicAlerts": true,
-    "passwordHash": "$2b$12$pX/TkpQvG5r7ken1Ey2pV.z7jsbJ4NHCkpBqLvVqyPtu9oqDFSuMC",
-    "id": "a34af63c-7080-4b48-ae26-fa5ad2bac58b",
-    "createdAt": "2025-09-06T06:38:20.220Z",
-    "updatedAt": "2025-09-06T06:38:20.220Z"
+    "updatedAt": "2025-09-06T06:34:50.949Z"
   }
 ]

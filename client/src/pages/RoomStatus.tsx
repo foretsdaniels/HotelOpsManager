@@ -9,13 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/services/api";
-import { useMutation } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
 import RoomStatusSelector from "@/components/RoomStatusSelector";
 import RoomComments from "@/components/RoomComments";
 import RoomAssignmentManager from "@/components/RoomAssignmentManager";
-import { QuickStatusButtons, QuickStatusCard } from "@/components/QuickStatusButtons";
 import { 
   Hotel, 
   Search,
@@ -42,33 +38,11 @@ const STATUS_FILTERS = [
 
 export default function RoomStatus() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const { isConnected: wsConnected, subscribe } = useWebSocket();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [floorFilter, setFloorFilter] = useState("all");
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-
-  // Mutation for updating room status
-  const updateRoomStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      return apiRequest("PATCH", `/api/rooms/${id}/status`, { status });
-    },
-    onSuccess: () => {
-      toast({ 
-        title: "Room status updated!", 
-        description: "The status change has been saved.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
-    },
-    onError: (error: any) => {
-      toast({ 
-        title: "Failed to update status", 
-        description: error.message,
-        variant: "destructive" 
-      });
-    }
-  });
 
   // Subscribe to WebSocket updates for real-time room status changes
   useEffect(() => {
@@ -300,23 +274,42 @@ export default function RoomStatus() {
               <p className="text-sm">Try adjusting your search or filter settings.</p>
             </div>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3">
               {roomsWithAssignments
                 .sort((a: any, b: any) => parseInt(a.number) - parseInt(b.number))
                 .map((room: any) => (
-                  <QuickStatusCard
-                    key={room.id}
-                    roomNumber={room.number}
-                    currentStatus={room.status}
-                    roomType={room.type}
-                    floor={room.floor}
-                    onStatusChange={async (status) => {
-                      await updateRoomStatusMutation.mutateAsync({
-                        id: room.id,
-                        status
-                      });
-                    }}
-                  />
+                  <div key={room.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Room {room.number}</span>
+                        <Badge variant="outline">{room.type}</Badge>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Floor {room.floor}</span>
+                        {room.assignedUser && (
+                          <Badge variant="secondary" className="text-xs">
+                            Assigned to {room.assignedUser.name}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <RoomStatusSelector room={room} showButton={false} compact={true} />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedRoom(room)}
+                        data-testid={`view-room-details-${room.number}`}
+                      >
+                        View Details
+                      </Button>
+                      
+                      <RoomStatusSelector room={room} showButton={true} compact={false} />
+                    </div>
+                  </div>
                 ))}
             </div>
           )}
