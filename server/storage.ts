@@ -124,7 +124,7 @@ export class MemStorage implements IStorage {
       lostFoundItems: new Map(),
       reportRuns: new Map(),
     };
-    this.loadData();
+    this.loadData().then(() => this.seedDemoData());
   }
 
   private async ensureDataDir() {
@@ -158,6 +158,99 @@ export class MemStorage implements IStorage {
     const map = this.data[type];
     const items = Array.from(map.values());
     await fs.writeFile(filePath, JSON.stringify(items, null, 2));
+  }
+
+  private async seedDemoData() {
+    // Only seed if no users exist
+    if (this.data.users.size === 0) {
+      const bcrypt = await import('bcryptjs');
+      
+      // Create demo users
+      const demoUsers = [
+        {
+          name: "Site Administrator",
+          email: "admin@hotel.com",
+          role: "site_admin" as const,
+          passwordHash: await bcrypt.hash("password", 12),
+          phone: "+1-555-0101",
+          canReceivePanicAlerts: true,
+        },
+        {
+          name: "Sarah Johnson",
+          email: "sarah@hotel.com", 
+          role: "head_housekeeper" as const,
+          passwordHash: await bcrypt.hash("password", 12),
+          phone: "+1-555-0102",
+          canReceivePanicAlerts: true,
+        },
+        {
+          name: "Mike Wilson",
+          email: "mike@hotel.com",
+          role: "maintenance" as const,
+          passwordHash: await bcrypt.hash("password", 12),
+          phone: "+1-555-0103",
+          canReceivePanicAlerts: false,
+        },
+        {
+          name: "Lisa Chen",
+          email: "lisa@hotel.com",
+          role: "room_attendant" as const,
+          passwordHash: await bcrypt.hash("password", 12),
+          phone: "+1-555-0104",
+          canReceivePanicAlerts: false,
+        },
+        {
+          name: "David Rodriguez",
+          email: "david@hotel.com",
+          role: "front_desk_manager" as const,
+          passwordHash: await bcrypt.hash("password", 12),
+          phone: "+1-555-0105",
+          canReceivePanicAlerts: true,
+        }
+      ];
+
+      for (const userData of demoUsers) {
+        const id = randomUUID();
+        const user: User = {
+          ...userData,
+          id,
+          phone: userData.phone,
+          canReceivePanicAlerts: userData.canReceivePanicAlerts,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        this.data.users.set(id, user);
+      }
+      
+      await this.saveData('users');
+      console.log('Demo users seeded successfully');
+      
+      // Create some demo rooms
+      const demoRooms = [
+        { number: "101", type: "Standard", floor: 1, status: "dirty" as const, squareFootage: 320 },
+        { number: "102", type: "Standard", floor: 1, status: "clean" as const, squareFootage: 320 },
+        { number: "201", type: "Deluxe", floor: 2, status: "dirty" as const, squareFootage: 450 },
+        { number: "202", type: "Deluxe", floor: 2, status: "maintenance" as const, squareFootage: 450 },
+        { number: "301", type: "Suite", floor: 3, status: "clean" as const, squareFootage: 650 },
+      ];
+
+      for (const roomData of demoRooms) {
+        const id = randomUUID();
+        const room: Room = {
+          ...roomData,
+          id,
+          floor: roomData.floor,
+          status: roomData.status,
+          squareFootage: roomData.squareFootage,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        this.data.rooms.set(id, room);
+      }
+      
+      await this.saveData('rooms');
+      console.log('Demo rooms seeded successfully');
+    }
   }
 
   // Users

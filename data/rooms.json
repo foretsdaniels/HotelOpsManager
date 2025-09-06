@@ -1,0 +1,52 @@
+[
+  {
+    "number": "101",
+    "type": "Standard",
+    "floor": 1,
+    "status": "dirty",
+    "squareFootage": 320,
+    "id": "c3c26101-3e3a-4c10-b75d-1ec0f92400a6",
+    "createdAt": "2025-09-06T02:17:57.593Z",
+    "updatedAt": "2025-09-06T02:17:57.593Z"
+  },
+  {
+    "number": "102",
+    "type": "Standard",
+    "floor": 1,
+    "status": "clean",
+    "squareFootage": 320,
+    "id": "7522cc39-7b1c-4f9c-88b9-dddc739c1461",
+    "createdAt": "2025-09-06T02:17:57.593Z",
+    "updatedAt": "2025-09-06T02:17:57.593Z"
+  },
+  {
+    "number": "201",
+    "type": "Deluxe",
+    "floor": 2,
+    "status": "dirty",
+    "squareFootage": 450,
+    "id": "5161149a-60c0-4154-b33b-6e3fc5feb305",
+    "createdAt": "2025-09-06T02:17:57.593Z",
+    "updatedAt": "2025-09-06T02:17:57.593Z"
+  },
+  {
+    "number": "202",
+    "type": "Deluxe",
+    "floor": 2,
+    "status": "maintenance",
+    "squareFootage": 450,
+    "id": "42fbdeca-a45e-4441-a4e2-ca4cc89ce999",
+    "createdAt": "2025-09-06T02:17:57.593Z",
+    "updatedAt": "2025-09-06T02:17:57.593Z"
+  },
+  {
+    "number": "301",
+    "type": "Suite",
+    "floor": 3,
+    "status": "clean",
+    "squareFootage": 650,
+    "id": "6679c4ae-e990-4832-a36b-cd61c04aa050",
+    "createdAt": "2025-09-06T02:17:57.593Z",
+    "updatedAt": "2025-09-06T02:17:57.593Z"
+  }
+]
