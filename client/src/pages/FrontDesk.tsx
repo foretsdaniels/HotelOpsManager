@@ -57,11 +57,23 @@ export default function FrontDesk() {
       }
     });
 
+    const unsubscribeRoomAssignments = subscribe('room_assignment_created', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/room-assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+    });
+
+    const unsubscribeRoomAssignmentDeleted = subscribe('room_assignment_deleted', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/room-assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+    });
+
     return () => {
       unsubscribeRoomStatus();
       unsubscribeTaskAssigned();
       unsubscribeTaskCompleted();
       unsubscribeComments();
+      unsubscribeRoomAssignments();
+      unsubscribeRoomAssignmentDeleted();
     };
   }, [subscribe]);
 

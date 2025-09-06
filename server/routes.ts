@@ -766,6 +766,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         assignedById: req.user!.userId,
       });
       const assignment = await storage.createRoomAssignment(assignmentData);
+      
+      // Send WebSocket notification for new room assignment
+      try {
+        const assignedBy = await storage.getUser(req.user!.userId);
+        const assignedTo = await storage.getUser(assignmentData.userId);
+        const room = await storage.getRoom(assignmentData.roomId);
+        
+        if (assignedBy && assignedTo && room) {
+          websocketService.broadcast({
+            type: 'room_assignment_created',
+            data: {
+              assignment,
+              assignedBy: {
+                name: assignedBy.name,
+                role: assignedBy.role
+              },
+              assignedTo: {
+                name: assignedTo.name,
+                role: assignedTo.role
+              },
+              room: {
+                id: room.id,
+                number: room.number,
+                type: room.type
+              }
+            },
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (notificationError) {
+        console.error('Failed to send room assignment notification:', notificationError);
+      }
+      
       res.status(201).json(assignment);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -785,12 +818,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/room-assignments/:roomId/:userId", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req, res) => {
+  app.delete("/api/room-assignments/:roomId/:userId", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req: AuthenticatedRequest, res) => {
     try {
+      // Get assignment details before deletion for WebSocket notification
+      const assignments = await storage.listRoomAssignments();
+      const originalAssignment = assignments.find(
+        a => a.roomId === req.params.roomId && a.userId === req.params.userId
+      );
+      
       const deleted = await storage.deleteRoomAssignment(req.params.roomId, req.params.userId);
       if (!deleted) {
         return res.status(404).json({ error: "Assignment not found" });
       }
+      
+      // Send WebSocket notification for deleted room assignment
+      if (originalAssignment) {
+        try {
+          const deletedBy = await storage.getUser(req.user!.userId);
+          const assignedUser = await storage.getUser(originalAssignment.userId);
+          const room = await storage.getRoom(originalAssignment.roomId);
+          
+          if (deletedBy && assignedUser && room) {
+            websocketService.broadcast({
+              type: 'room_assignment_deleted',
+              data: {
+                roomId: originalAssignment.roomId,
+                userId: originalAssignment.userId,
+                deletedBy: {
+                  name: deletedBy.name,
+                  role: deletedBy.role
+                },
+                assignedUser: {
+                  name: assignedUser.name,
+                  role: assignedUser.role
+                },
+                room: {
+                  id: room.id,
+                  number: room.number,
+                  type: room.type
+                }
+              },
+              timestamp: new Date().toISOString()
+            });
+          }
+        } catch (notificationError) {
+          console.error('Failed to send room assignment deletion notification:', notificationError);
+        }
+      }
+      
       res.status(200).json({ message: "Assignment deleted successfully" });
     } catch (error: any) {
       res.status(400).json({ error: error.message });

@@ -42,7 +42,7 @@ export default function RoomComments({ roomId, roomNumber }: RoomCommentsProps) 
   // Ensure comments is always an array
   const comments = Array.isArray(commentsData) ? commentsData : [];
 
-  const { data: users = [] } = useQuery({
+  const { data: users = [] } = useQuery<any[]>({
     queryKey: ["/api/users"],
   });
 

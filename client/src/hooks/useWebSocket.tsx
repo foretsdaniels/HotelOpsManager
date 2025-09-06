@@ -61,10 +61,8 @@ export function useWebSocket() {
             }
           });
 
-          // Show toast notifications for specific message types
-          if (message.type !== 'user_notification') {
-            handleNotification(message);
-          }
+          // Show toast notifications for all message types
+          handleNotification(message);
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
         }
@@ -141,6 +139,24 @@ export function useWebSocket() {
             title: "🚨 PANIC ALERT",
             description: `Emergency alert at ${message.data.location} triggered by ${message.data.triggeredBy.name}`,
             variant: 'destructive',
+          });
+        }
+        break;
+
+      case 'room_assignment_created':
+        if (message.data.assignedTo && message.data.room) {
+          toast({
+            title: "Room Assignment Created",
+            description: `${message.data.assignedTo.name} assigned to Room ${message.data.room.number}`,
+          });
+        }
+        break;
+
+      case 'room_assignment_deleted':
+        if (message.data.assignedUser && message.data.room) {
+          toast({
+            title: "Room Assignment Removed",
+            description: `${message.data.assignedUser.name} unassigned from Room ${message.data.room.number}`,
           });
         }
         break;
