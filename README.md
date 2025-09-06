@@ -17,7 +17,6 @@
 - **Bulk Operations**: Multi-room status updates and assignments
 
 ### 📋 Task Management
-- **Smart Task Creation**: Automatic task generation based on room status
 - **Priority System**: High, medium, low priority with SLA tracking
 - **Task Assignment**: Role-based task distribution
 - **Real-time Updates**: WebSocket-powered live updates across all clients
@@ -27,12 +26,6 @@
 - **Process Inspections**: Operational procedure verification
 - **Digital Signatures**: Secure inspector sign-off
 - **Photo Documentation**: Visual evidence capture and storage
-
-### 🛠️ Maintenance Workflows
-- **Work Orders**: Detailed maintenance request tracking
-- **Preventive Maintenance**: Scheduled equipment and facility maintenance
-- **Priority Management**: Emergency, urgent, routine maintenance categories
-- **Vendor Management**: External service provider coordination
 
 ### 📊 Advanced Reporting & Analytics
 - **Interactive Charts**: Room status distribution, task completion trends
@@ -179,12 +172,6 @@
 - **Assignment Tracking**: View current room assignments and progress
 - **Reporting**: Access operational reports and metrics
 
-### 🔧 Maintenance Management
-
-- **Work Orders**: Create and track maintenance requests
-- **Preventive Maintenance**: Schedule recurring maintenance tasks
-- **Vendor Coordination**: Manage external service providers
-- **Asset Tracking**: Monitor equipment and facility conditions
 
 ## 📡 API Documentation
 
@@ -367,13 +354,6 @@ Use conventional commits:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙋‍♀️ Support
-
-For questions, issues, or contributions:
-
-- **Issues**: [GitHub Issues](https://github.com/your-username/hotel-ops-management/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/hotel-ops-management/discussions)
-- **Documentation**: [Wiki](https://github.com/your-username/hotel-ops-management/wiki)
 
 ## 📚 Additional Resources
 
