@@ -31,5 +31,47 @@
     },
     "id": "488fcaa8-43c5-45a3-886c-9850d3062732",
     "createdAt": "2025-09-06T04:23:41.303Z"
+  },
+  {
+    "type": "daily_reset",
+    "params": {
+      "date": "2025-09-06"
+    },
+    "results": {
+      "date": "2025-09-06",
+      "roomStatuses": [
+        {
+          "roomId": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
+          "roomNumber": "103",
+          "finalStatus": "clean_inspected",
+          "assignedUser": "Lisa Chen",
+          "completedTasks": 0,
+          "openComments": 0
+        }
+      ],
+      "tasksSummary": {
+        "totalTasks": 4,
+        "completedTasks": 0,
+        "pendingTasks": 1
+      },
+      "workOrdersSummary": {
+        "totalWorkOrders": 0,
+        "completedWorkOrders": 0,
+        "pendingWorkOrders": 0
+      },
+      "roomMetrics": {
+        "totalRooms": 1,
+        "readyRooms": 0,
+        "rollRooms": 0,
+        "outRooms": 0,
+        "cleanInspectedRooms": 1,
+        "dirtyRooms": 0,
+        "maintenanceRooms": 0,
+        "outOfOrderRooms": 0
+      },
+      "resetTime": "2025-09-06T05:24:07.032Z"
+    },
+    "id": "e3378430-b137-4d80-aebd-a913ef2eb3f3",
+    "createdAt": "2025-09-06T05:24:07.032Z"
   }
 ]

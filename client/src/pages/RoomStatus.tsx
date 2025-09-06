@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import RoomStatusSelector from "@/components/RoomStatusSelector";
 import RoomComments from "@/components/RoomComments";
+import RoomAssignmentManager from "@/components/RoomAssignmentManager";
 import { 
   Hotel, 
   Search,
@@ -331,6 +332,13 @@ export default function RoomStatus() {
                     <RoomStatusSelector room={selectedRoom} showButton={true} compact={false} />
                   </div>
                 </div>
+              </div>
+              
+              <div className="border-t pt-6">
+                <RoomAssignmentManager 
+                  roomId={selectedRoom.id} 
+                  roomNumber={selectedRoom.number} 
+                />
               </div>
               
               <RoomComments 

@@ -9,5 +9,16 @@
     "passFail": null,
     "signedAt": null,
     "createdAt": "2025-09-06T03:42:57.529Z"
+  },
+  {
+    "kind": "room",
+    "roomId": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
+    "inspectorId": "be940a5c-2175-47c2-960b-e77288404f77",
+    "checklist": {},
+    "id": "a0c4a801-fe86-4f4a-ad25-a65f2e765516",
+    "score": null,
+    "passFail": null,
+    "signedAt": null,
+    "createdAt": "2025-09-06T05:23:21.700Z"
   }
 ]

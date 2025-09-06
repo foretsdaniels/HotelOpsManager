@@ -1,0 +1,22 @@
+[
+  {
+    "roomId": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
+    "userId": "system",
+    "comment": "Daily reset: Status changed from CLEAN_INSPECTED to DIRTY",
+    "priority": "low",
+    "isResolved": false,
+    "id": "c3393be4-86e5-43ea-b3de-55171d179357",
+    "createdAt": "2025-09-06T05:24:07.034Z",
+    "updatedAt": "2025-09-06T05:24:07.034Z"
+  },
+  {
+    "roomId": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
+    "userId": "be940a5c-2175-47c2-960b-e77288404f77",
+    "comment": "test",
+    "priority": "low",
+    "id": "60836004-5246-4ace-905c-335bb8ad3b2c",
+    "isResolved": false,
+    "createdAt": "2025-09-06T05:24:18.854Z",
+    "updatedAt": "2025-09-06T05:24:18.854Z"
+  }
+]
