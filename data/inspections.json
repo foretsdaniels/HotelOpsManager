@@ -1,29 +1,6 @@
 [
   {
     "kind": "room",
-    "roomId": "7522cc39-7b1c-4f9c-88b9-dddc739c1461",
-    "inspectorId": "be940a5c-2175-47c2-960b-e77288404f77",
-    "checklist": {},
-    "id": "e59d872b-d8e0-4f23-ab92-3b2d2d068304",
-    "score": null,
-    "passFail": null,
-    "signedAt": null,
-    "createdAt": "2025-09-06T03:42:57.529Z",
-    "archived": true
-  },
-  {
-    "kind": "room",
-    "roomId": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
-    "inspectorId": "be940a5c-2175-47c2-960b-e77288404f77",
-    "checklist": {},
-    "id": "a0c4a801-fe86-4f4a-ad25-a65f2e765516",
-    "score": null,
-    "passFail": null,
-    "signedAt": null,
-    "createdAt": "2025-09-06T05:23:21.700Z"
-  },
-  {
-    "kind": "room",
     "roomId": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
     "inspectorId": "be940a5c-2175-47c2-960b-e77288404f77",
     "checklist": {},
