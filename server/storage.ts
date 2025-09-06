@@ -228,6 +228,11 @@ export class MemStorage implements IStorage {
           id,
           phone: userData.phone,
           canReceivePanicAlerts: userData.canReceivePanicAlerts,
+          emailNotifications: true,
+          emailTaskAssigned: true,
+          emailTaskCompleted: true,
+          emailRoomStatusChanged: true,
+          emailInspectionCompleted: true,
           createdAt: new Date(),
           updatedAt: new Date(),
         };

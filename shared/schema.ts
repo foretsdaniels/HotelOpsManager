@@ -25,6 +25,11 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").notNull(),
   passwordHash: text("password_hash").notNull(),
   canReceivePanicAlerts: boolean("can_receive_panic_alerts").default(false),
+  emailNotifications: boolean("email_notifications").default(true),
+  emailTaskAssigned: boolean("email_task_assigned").default(true),
+  emailTaskCompleted: boolean("email_task_completed").default(true),
+  emailRoomStatusChanged: boolean("email_room_status_changed").default(true),
+  emailInspectionCompleted: boolean("email_inspection_completed").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

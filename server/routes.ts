@@ -9,6 +9,7 @@ import {
 import { generateToken, hashPassword, comparePassword, canReceivePanicAlerts } from "./auth";
 import { authenticateToken, requireRole, requireAuth, type AuthenticatedRequest } from "./middleware";
 import { ObjectStorageService } from "./objectStorage";
+import { emailService } from "./emailService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   

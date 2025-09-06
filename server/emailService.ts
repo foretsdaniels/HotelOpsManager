@@ -35,7 +35,7 @@ export class EmailService {
       from: process.env.SMTP_FROM || 'noreply@hotel.com'
     };
 
-    this.transporter = nodemailer.createTransporter({
+    this.transporter = nodemailer.createTransport({
       host: this.config.host,
       port: this.config.port,
       secure: this.config.secure,
@@ -207,7 +207,7 @@ export class EmailService {
           task: {
             ...task,
             roomNumber: room?.number,
-            completedAt: task.completedAt ? new Date(task.completedAt).toLocaleString() : 'Unknown'
+            completedAt: task.finishedAt ? new Date(task.finishedAt).toLocaleString() : 'Unknown'
           },
           completedBy: completedBy.name
         });
@@ -257,9 +257,20 @@ export class EmailService {
   }
 
   private shouldSendNotification(user: User, notificationType: string): boolean {
-    // For now, send all notifications unless user has specifically opted out
-    // This can be enhanced with user preferences from database
-    return true;
+    if (!user.emailNotifications) return false;
+    
+    switch (notificationType) {
+      case 'taskAssigned':
+        return user.emailTaskAssigned ?? true;
+      case 'taskCompleted':
+        return user.emailTaskCompleted ?? true;
+      case 'roomStatusChanged':
+        return user.emailRoomStatusChanged ?? true;
+      case 'inspectionCompleted':
+        return user.emailInspectionCompleted ?? true;
+      default:
+        return true;
+    }
   }
 
   async testConnection(): Promise<boolean> {
