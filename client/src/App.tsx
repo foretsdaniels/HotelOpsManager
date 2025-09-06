@@ -13,6 +13,7 @@ import Maintenance from "@/pages/Maintenance";
 import RAMonitor from "@/pages/RAMonitor";
 import Reports from "@/pages/Reports";
 import PanicLog from "@/pages/PanicLog";
+import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -52,6 +53,11 @@ function Router() {
       <Route path="/panic-log" component={() => (
         <Layout>
           <PanicLog />
+        </Layout>
+      )} />
+      <Route path="/settings" component={() => (
+        <Layout>
+          <Settings />
         </Layout>
       )} />
       <Route component={NotFound} />

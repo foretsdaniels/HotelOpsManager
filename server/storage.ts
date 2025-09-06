@@ -3,7 +3,7 @@ import {
   type Task, type InsertTask, type TaskPhoto, type Inspection, type InsertInspection,
   type WorkOrder, type InsertWorkOrder, type PMTemplate, type InsertPMTemplate,
   type PMInstance, type InsertPMInstance, type PanicEvent, type InsertPanicEvent,
-  type LostFoundItem, type InsertLostFoundItem, type ReportRun, type InsertReportRun
+ type ReportRun, type InsertReportRun
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import fs from "fs/promises";
@@ -20,7 +20,6 @@ const DATA_FILES = {
   pmTemplates: path.join(DATA_DIR, "pm-templates.json"),
   pmInstances: path.join(DATA_DIR, "pm-instances.json"),
   panicEvents: path.join(DATA_DIR, "panic-events.json"),
-  lostFoundItems: path.join(DATA_DIR, "lost-found-items.json"),
   reportRuns: path.join(DATA_DIR, "report-runs.json"),
 };
 
@@ -77,13 +76,6 @@ export interface IStorage {
   createPanicEvent(event: InsertPanicEvent): Promise<PanicEvent>;
   listPanicEvents(): Promise<PanicEvent[]>;
   
-  // Lost & Found
-  getLostFoundItem(id: string): Promise<LostFoundItem | undefined>;
-  createLostFoundItem(item: InsertLostFoundItem): Promise<LostFoundItem>;
-  updateLostFoundItem(id: string, updates: Partial<LostFoundItem>): Promise<LostFoundItem | undefined>;
-  listLostFoundItems(filters?: { status?: string }): Promise<LostFoundItem[]>;
-  bulkClearExpired(): Promise<number>;
-  
   // Reports
   createReportRun(report: InsertReportRun): Promise<ReportRun>;
   getReportRun(id: string): Promise<ReportRun | undefined>;
@@ -106,7 +98,6 @@ export class MemStorage implements IStorage {
     pmTemplates: Map<string, PMTemplate>;
     pmInstances: Map<string, PMInstance>;
     panicEvents: Map<string, PanicEvent>;
-    lostFoundItems: Map<string, LostFoundItem>;
     reportRuns: Map<string, ReportRun>;
   };
 
@@ -121,7 +112,6 @@ export class MemStorage implements IStorage {
       pmTemplates: new Map(),
       pmInstances: new Map(),
       panicEvents: new Map(),
-      lostFoundItems: new Map(),
       reportRuns: new Map(),
     };
     this.loadData().then(() => this.seedDemoData());
