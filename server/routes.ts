@@ -42,8 +42,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...userDataWithoutPassword } = userData;
       const user = await storage.createUser({
         ...userDataWithoutPassword,
+        password: userData.password,  // Pass the plain password; storage will handle hashing
         passwordHash,
-      });
+      } as any);
       
       const { passwordHash: _, ...userResponse } = user;
       res.status(201).json(userResponse);
