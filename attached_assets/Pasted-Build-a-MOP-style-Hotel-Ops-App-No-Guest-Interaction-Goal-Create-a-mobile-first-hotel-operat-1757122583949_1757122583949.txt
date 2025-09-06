@@ -1,0 +1,375 @@
+Build a MOP-style Hotel Ops App (No Guest Interaction)
+
+
+Goal: Create a mobile-first hotel operations platform inspired by Visual Matrix MOP that streamlines housekeeping and maintenance workflows, inspections, preventive maintenance, and reporting—without any guest-interaction features. Include:
+
+a working web app (backend + frontend)
+
+Dockerized dev environment
+
+Cloudflare Worker for edge routing/proxy
+
+Self-hosting README with step-by-step instructions
+
+
+
+Use pragmatic defaults and generate runnable code.
+
+
+
+Tech Stack (preferred, but you may choose equivalents if needed)
+Backend: Node.js + Fastify (or NestJS), PostgreSQL via Prisma ORM, JWT auth, zod validation
+
+Frontend: React (Vite), TypeScript, PWA (service worker + manifest), React Router
+
+Storage: S3-compatible (e.g., MinIO) for photos/files (abstract via env)
+
+Notifications: Email adapter (SMTP) + placeholder web-push (VAPID keys)
+
+Infra: Docker Compose for dev; Cloudflare Worker for /edge routing and public static delivery
+
+Testing: Vitest (frontend), Jest (backend) with a couple of happy-path e2e tests
+
+Lint/Format: ESLint + Prettier
+
+
+
+Scope (MVP)
+Roles: Site Admin, Head Housekeeper, Room Attendant (RA), Maintenance, Front Desk/Manager
+
+Tasks: CRUD, assign/reassign (RA Monitor-style), start/pause/finish, notes/photos, soft-delete + restore, search & filters
+
+Housekeeping: Room & Process Inspections with checklists, pass/fail, notes/photos, inspector signature; manual room assignment when PMS is off
+
+Maintenance: Work Orders (priority/SLA, parts/labor), Preventive Maintenance (PM) with templates + frequency (support “days counter” and “days rented” modes)
+
+Reports: RA Average Time by task type/date; Inspection reports; Square-Foot based productivity
+
+Panic Alert: User panic trigger logs to admin recipients (email/web-push), stores timestamp & optional media ref
+
+Lost & Found: Log item → store → return/clear → bulk clear expired
+
+PMS Hooks (optional): Stubs for mapping room statuses & importing users/assignments (turned off by default)
+
+Explicitly Out of Scope: Any guest-facing messaging or interaction
+
+
+
+Data Model (Prisma schema sketch)
+
+
+Create a schema matching the entities below with sensible indexes and relations:
+
+User(id, name, email, phone?, role, password_hash, canReceivePanicAlerts:boolean, createdAt, updatedAt)
+
+Room(id, number, type, floor?, status, createdAt, updatedAt)
+
+Task(id, type: enum[‘cleaning’,‘maintenance’,‘alert’], status enum, priority enum, roomId?, assigneeId?, createdById, dueAt?, startedAt?, pausedAt?, finishedAt?, verifiedById?, notes TEXT, createdAt, updatedAt)
+
+TaskPhoto(id, taskId, url, createdAt)
+
+RecurringTask(id, templateName, type, cadence ISO RRULE or enum+interval, nextRunAt, active, createdAt, updatedAt)
+
+Inspection(id, kind enum[‘room’,‘process’], roomId?, inspectorId, checklist JSON, score?, passFail boolean, signedAt?, createdAt)
+
+WorkOrder(id, title, description, priority, roomId?, assigneeId, status enum, slaDueAt?, parts JSON?, laborMins INT?, closedAt?, createdAt, updatedAt)
+
+PMTemplate(id, title, frequency enum[‘days_counter’,‘days_rented’], interval INT, checklist JSON, createdAt)
+
+PMInstance(id, templateId, dueAt, status enum, createdAt, updatedAt)
+
+PanicEvent(id, userId, timestamp, recipients JSON, mediaUrl?, createdAt)
+
+LostFoundItem(id, description, locationFound, storageArea?, status enum[‘logged’,‘stored’,‘returned’,‘expired_cleared’], expireAt?, createdAt, updatedAt)
+
+ReportRun(id, type enum, params JSON, createdAt)
+
+
+
+Backend API (examples; implement these routes)
+
+
+Auth & RBAC via JWT; protect routes by role claims.
+
+POST /auth/register (admin only), POST /auth/login, GET /auth/me
+
+Tasks: POST /tasks, GET /tasks, GET /tasks/:id, PATCH /tasks/:id, POST /tasks/:id/restore, POST /tasks/:id/reassign
+
+Inspections: POST /inspections, GET /inspections?kind=room|process
+
+Maintenance/PM:
+
+POST /workorders, GET /workorders, PATCH /workorders/:id
+
+POST /pm/templates, GET /pm/templates, GET /pm/upcoming, PATCH /pm/instances/:id
+
+Panic: POST /panic/trigger, GET /panic/log
+
+Lost & Found: POST /lf/report, PATCH /lf/:id/storage, POST /lf/:id/return, POST /lf/bulk-clear-expired, GET /lf
+
+Reports (read-only): GET /reports/ra-average-times, GET /reports/inspections, GET /reports/square-foot
+
+PMS stubs (disabled by default via env flag):
+
+POST /integrations/pms/import-users
+
+POST /integrations/pms/import-assignments
+
+A constants file with room-status mappings
+
+
+
+Add OpenAPI (JSON) via a route like /docs/openapi.json.
+
+
+
+Frontend (pages/components)
+Auth: Login, role-aware routing
+
+Dashboard: left nav by role; KPIs (My Tasks, Open WOs, Upcoming PMs, Inspections pending)
+
+Tasks: list (filters, color status chips), detail (start/pause/finish), notes/photos, quick actions (Alert / Maint)
+
+RA Monitor: multi-select reassignment with inline status updates
+
+Housekeeping: create inspections (room/process), checklist UI, photo upload, sign-off
+
+Maintenance: WO kanban; PM Upcoming views with frequency toggles; PM template editor
+
+Panic: top-bar button (role-gated); confirm modal; post-event toast; log screen (admin)
+
+Lost & Found: item form, storage/return, bulk clear expired
+
+Reports:
+
+RA Average Time (date/user/room-type filters, export CSV)
+
+Inspections summary (pass/fail counts, export CSV)
+
+Square-Foot totals (by user/date range)
+
+
+
+Make it a PWA (manifest + service worker) and mobile-first (touch targets, offline shell for read-only task lists).
+
+
+
+Deliverables (generate these files)
+.
+├─ apps/
+│  ├─ api/                      # Fastify/NestJS + Prisma
+│  │  ├─ src/
+│  │  │  ├─ main.ts
+│  │  │  ├─ env.ts
+│  │  │  ├─ auth/
+│  │  │  ├─ tasks/
+│  │  │  ├─ inspections/
+│  │  │  ├─ maintenance/
+│  │  │  ├─ pm/
+│  │  │  ├─ panic/
+│  │  │  ├─ lostfound/
+│  │  │  ├─ reports/
+│  │  │  └─ integrations/pms/
+│  │  ├─ prisma/schema.prisma
+│  │  └─ package.json
+│  └─ web/                      # React + Vite + TS + PWA
+│     ├─ src/
+│     │  ├─ main.tsx
+│     │  ├─ app.tsx
+│     │  ├─ routes/
+│     │  ├─ components/
+│     │  ├─ services/api.ts
+│     │  ├─ pwa/service-worker.ts
+│     │  └─ pwa/manifest.webmanifest
+│     └─ package.json
+├─ infra/
+│  ├─ docker-compose.yml
+│  ├─ .env.example
+│  ├─ minio/ (optional dev S3)
+│  └─ db/ (init scripts)
+├─ edge/
+│  ├─ worker.ts                 # Cloudflare Worker proxy/cache
+│  └─ wrangler.toml
+├─ README.md                    # Self-hosting guide (detailed)
+├─ PROMPT_ACCEPTANCE.md         # Acceptance checklist
+└─ LICENSE
+Docker Compose (dev)
+api (port 8080)
+
+web (port 5173)
+
+db (Postgres 14, volume)
+
+minio (optional S3 for uploads, volume)
+
+edge (wrangler dev not in compose—document a separate npm run dev:edge)
+
+
+
+Cloudflare Worker (edge/worker.ts)
+
+
+Implement:
+
+Proxy /api/* to origin API (respect Authorization header; pass CF-Connecting-IP)
+
+Cache static /assets/* from web build
+
+Block any guest-interaction endpoints if mistakenly added
+
+Add wrangler.toml with:
+
+name, main, compatibility_date
+
+vars for ORIGIN_API_URL, ALLOW_GUEST_ENDPOINTS=false
+
+example routes (commented) and account_id placeholder
+
+
+
+Security & RBAC
+JWT with role claims; middleware to gate routes
+
+CSRF not needed for pure API + JWT; enforce CORS origin from env
+
+File uploads: validate MIME and max size; store to S3 bucket with presigned PUTs
+
+
+
+Seeding
+
+
+Create a script to seed:
+
+Roles (Admin, HeadHousekeeper, RA, Maintenance, Manager)
+
+A few rooms, users, PM templates, sample tasks, inspections, WOs
+
+
+
+Reporting Logic (summaries)
+RA Avg Time: average finishedAt - startedAt per task type, filtered
+
+Inspection Reports: counts, last-N failures, export CSV
+
+Square-Foot: sum by user and date range
+
+
+
+README.md (self-hosting)
+
+
+Write a thorough guide covering:
+
+Overview & architecture diagram
+
+Prereqs: Docker, Node 20, npm, Cloudflare Wrangler, Postgres
+
+Env setup: fill .env and service envs (examples below)
+
+Commands: install, migrate, seed, run dev, build, run prod
+
+Cloudflare Worker deploy: wrangler publish, set vars, route config
+
+Storage: set S3/MinIO bucket + credentials
+
+PWA: enabling service worker; web-push VAPID key generation
+
+PMS Integrations: how to toggle on/off (off by default)
+
+Troubleshooting: DB connection, prisma migrate reset, CORS, auth, file upload issues
+
+No guest interaction: reiterate non-goal and guardrails
+
+
+
+.env.example
+ (root or in 
+infra/
+)
+# API
+API_PORT=8080
+JWT_SECRET=change-me
+CORS_ORIGIN=http://localhost:5173
+ENABLE_PMS=false
+
+# DATABASE
+DATABASE_URL=postgresql://app:app@db:5432/mopapp?schema=public
+
+# STORAGE (S3-compatible)
+STORAGE_ENDPOINT=http://minio:9000
+STORAGE_REGION=us-east-1
+STORAGE_BUCKET=uploads
+STORAGE_ACCESS_KEY=minioadmin
+STORAGE_SECRET_KEY=minioadmin
+STORAGE_USE_SSL=false
+
+# NOTIFICATIONS
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=user
+SMTP_PASS=pass
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:admin@example.com
+
+# EDGE
+ORIGIN_API_URL=http://api:8080
+ALLOW_GUEST_ENDPOINTS=false
+Developer Experience
+Add npm scripts for: dev, build, start, test, migrate, seed, lint, format
+
+Prettier + ESLint configs
+
+Simple OpenAPI JSON exposure at /docs/openapi.json
+
+GitHub Actions: lint + test on PR, optional Wrangler publish on tag
+
+
+
+Acceptance Criteria (PROMPT_ACCEPTANCE.md)
+Role-aware dashboard with left nav
+
+Tasks: CRUD + assign/reassign + soft-delete/restore + search/filters + notes/photos
+
+Housekeeping: room/process inspections (checklists, photos, sign-off)
+
+Maintenance: Work Orders + PM (days counter / days rented) + PM templates
+
+Panic alert: trigger + admin notifications + log
+
+Lost & Found: full lifecycle + bulk clear expired
+
+Reports: RA Avg Time, Inspections, Square-Foot (filterable, CSV export)
+
+Cloudflare Worker: proxy /api/*, cache /assets/*, env-driven guardrail for guest endpoints
+
+Docker Compose up for api, web, db, minio (dev)
+
+README with clear self-hosting steps
+
+No guest interaction features present
+
+
+
+Style & UX
+Mobile-first layouts; accessible forms (labels, aria)
+
+Status chips with clear color semantics; skeleton loaders; optimistic UI where safe
+
+Toasts for success/errors; confirm modals for destructive actions
+
+
+
+Nice-to-Have (time-boxed)
+Export JSON/CSV for tasks and inspections
+
+Dark mode toggle
+
+Simple role management UI (admin)
+
+Basic rate limiting on auth + write endpoints
+
+
+
+Build all of the above now. Generate runnable code, config, and docs as specified.
