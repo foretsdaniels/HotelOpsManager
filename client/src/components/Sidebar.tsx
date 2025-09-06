@@ -11,7 +11,8 @@ import {
   Search, 
   BarChart3, 
   AlertCircle, 
-  Settings 
+  Settings,
+  Hotel
 } from "lucide-react";
 
 const navigationItems = [
@@ -46,6 +47,12 @@ const navigationItems = [
     label: "RA Monitor",
     icon: Users,
     roles: ["site_admin", "head_housekeeper", "front_desk_manager"],
+  },
+  {
+    href: "/front-desk",
+    label: "Front Desk",
+    icon: Hotel,
+    roles: ["site_admin", "front_desk_manager"],
   },
   {
     href: "/reports",
