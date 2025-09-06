@@ -73,5 +73,53 @@
     },
     "id": "e3378430-b137-4d80-aebd-a913ef2eb3f3",
     "createdAt": "2025-09-06T05:24:07.032Z"
+  },
+  {
+    "type": "daily_reset",
+    "params": {
+      "date": "2025-09-06"
+    },
+    "results": {
+      "date": "2025-09-06",
+      "roomStatuses": [
+        {
+          "roomId": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
+          "roomNumber": "103",
+          "finalStatus": "clean_inspected",
+          "completedTasks": 0,
+          "openComments": 0
+        },
+        {
+          "roomId": "c74acf34-baac-444f-8b26-9894deb7dff0",
+          "roomNumber": "104",
+          "finalStatus": "dirty",
+          "completedTasks": 0,
+          "openComments": 0
+        }
+      ],
+      "tasksSummary": {
+        "totalTasks": 4,
+        "completedTasks": 0,
+        "pendingTasks": 1
+      },
+      "workOrdersSummary": {
+        "totalWorkOrders": 0,
+        "completedWorkOrders": 0,
+        "pendingWorkOrders": 0
+      },
+      "roomMetrics": {
+        "totalRooms": 2,
+        "readyRooms": 0,
+        "rollRooms": 0,
+        "outRooms": 0,
+        "cleanInspectedRooms": 1,
+        "dirtyRooms": 0,
+        "maintenanceRooms": 0,
+        "outOfOrderRooms": 0
+      },
+      "resetTime": "2025-09-06T06:47:46.437Z"
+    },
+    "id": "78584b46-a5b3-4135-8d96-13c3f05bdf2a",
+    "createdAt": "2025-09-06T06:47:46.437Z"
   }
 ]
