@@ -3,7 +3,7 @@ import {
   type Task, type InsertTask, type TaskPhoto, type Inspection, type InsertInspection,
   type WorkOrder, type InsertWorkOrder, type PMTemplate, type InsertPMTemplate,
   type PMInstance, type InsertPMInstance, type PanicEvent, type InsertPanicEvent,
- type ReportRun, type InsertReportRun
+  type ReportRun, type InsertReportRun, type RoomComment, type InsertRoomComment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import fs from "fs/promises";
@@ -21,6 +21,7 @@ const DATA_FILES = {
   pmInstances: path.join(DATA_DIR, "pm-instances.json"),
   panicEvents: path.join(DATA_DIR, "panic-events.json"),
   reportRuns: path.join(DATA_DIR, "report-runs.json"),
+  roomComments: path.join(DATA_DIR, "room-comments.json"),
 };
 
 export interface IStorage {
@@ -81,6 +82,13 @@ export interface IStorage {
   getReportRun(id: string): Promise<ReportRun | undefined>;
   listReportRuns(): Promise<ReportRun[]>;
   
+  // Room Comments
+  getRoomComment(id: string): Promise<RoomComment | undefined>;
+  createRoomComment(comment: InsertRoomComment): Promise<RoomComment>;
+  updateRoomComment(id: string, updates: Partial<RoomComment>): Promise<RoomComment | undefined>;
+  listRoomComments(roomId?: string): Promise<RoomComment[]>;
+  deleteRoomComment(id: string): Promise<boolean>;
+
   // Analytics
   getRAAvgTimes(filters?: { userId?: string; taskType?: string; dateFrom?: Date; dateTo?: Date }): Promise<any[]>;
   getInspectionReports(filters?: { dateFrom?: Date; dateTo?: Date }): Promise<any>;
@@ -99,6 +107,7 @@ export class MemStorage implements IStorage {
     pmInstances: Map<string, PMInstance>;
     panicEvents: Map<string, PanicEvent>;
     reportRuns: Map<string, ReportRun>;
+    roomComments: Map<string, RoomComment>;
   };
 
   constructor() {
@@ -113,6 +122,7 @@ export class MemStorage implements IStorage {
       pmInstances: new Map(),
       panicEvents: new Map(),
       reportRuns: new Map(),
+      roomComments: new Map(),
     };
     this.loadData().then(() => this.seedDemoData());
   }
@@ -683,6 +693,56 @@ export class MemStorage implements IStorage {
 
   async listPanicEvents(): Promise<PanicEvent[]> {
     return Array.from(this.data.panicEvents.values());
+  }
+
+  // Room Comments
+  async getRoomComment(id: string): Promise<RoomComment | undefined> {
+    return this.data.roomComments.get(id);
+  }
+
+  async createRoomComment(insertComment: InsertRoomComment): Promise<RoomComment> {
+    const id = randomUUID();
+    const comment: RoomComment = {
+      ...insertComment,
+      id,
+      priority: insertComment.priority ?? "low",
+      isResolved: insertComment.isResolved ?? false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.data.roomComments.set(id, comment);
+    await this.saveData('roomComments');
+    return comment;
+  }
+
+  async updateRoomComment(id: string, updates: Partial<RoomComment>): Promise<RoomComment | undefined> {
+    const comment = this.data.roomComments.get(id);
+    if (!comment) return undefined;
+    
+    const updatedComment = { ...comment, ...updates, updatedAt: new Date() };
+    this.data.roomComments.set(id, updatedComment);
+    await this.saveData('roomComments');
+    return updatedComment;
+  }
+
+  async listRoomComments(roomId?: string): Promise<RoomComment[]> {
+    let comments = Array.from(this.data.roomComments.values());
+    
+    if (roomId) {
+      comments = comments.filter(comment => comment.roomId === roomId);
+    }
+    
+    // Sort by newest first
+    return comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async deleteRoomComment(id: string): Promise<boolean> {
+    const existed = this.data.roomComments.has(id);
+    this.data.roomComments.delete(id);
+    if (existed) {
+      await this.saveData('roomComments');
+    }
+    return existed;
   }
 
   // Reports

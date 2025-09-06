@@ -155,6 +155,18 @@ export const reportRuns = pgTable("report_runs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Room Comments
+export const roomComments = pgTable("room_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  roomId: varchar("room_id").references(() => rooms.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  comment: text("comment").notNull(),
+  priority: priorityEnum("priority").default("low"),
+  isResolved: boolean("is_resolved").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -215,6 +227,12 @@ export const insertReportRunSchema = createInsertSchema(reportRuns).omit({
   createdAt: true,
 });
 
+export const insertRoomCommentSchema = createInsertSchema(roomComments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -233,10 +251,10 @@ export type PMInstance = typeof pmInstances.$inferSelect;
 export type InsertPMInstance = z.infer<typeof insertPMInstanceSchema>;
 export type PanicEvent = typeof panicEvents.$inferSelect;
 export type InsertPanicEvent = z.infer<typeof insertPanicEventSchema>;
-export type LostFoundItem = typeof lostFoundItems.$inferSelect;
-export type InsertLostFoundItem = z.infer<typeof insertLostFoundItemSchema>;
 export type ReportRun = typeof reportRuns.$inferSelect;
 export type InsertReportRun = z.infer<typeof insertReportRunSchema>;
+export type RoomComment = typeof roomComments.$inferSelect;
+export type InsertRoomComment = z.infer<typeof insertRoomCommentSchema>;
 
 // Login schema
 export const loginSchema = z.object({

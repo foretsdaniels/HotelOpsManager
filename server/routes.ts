@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { 
   loginSchema, insertUserSchema, insertTaskSchema, insertRoomSchema,
   insertInspectionSchema, insertWorkOrderSchema, insertPMTemplateSchema,
-  insertPMInstanceSchema, insertPanicEventSchema
+  insertPMInstanceSchema, insertPanicEventSchema, insertRoomCommentSchema
 } from "@shared/schema";
 import { generateToken, hashPassword, comparePassword, canReceivePanicAlerts } from "./auth";
 import { authenticateToken, requireRole, requireAuth, type AuthenticatedRequest } from "./middleware";
@@ -356,6 +356,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Room Comments Routes
+  app.get("/api/room-comments", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { roomId } = req.query;
+      const comments = await storage.listRoomComments(roomId as string);
+      res.json(comments);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/room-comments", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const commentData = insertRoomCommentSchema.parse({
+        ...req.body,
+        userId: req.user!.userId,
+      });
+      
+      const comment = await storage.createRoomComment(commentData);
+      res.status(201).json(comment);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/room-comments/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const updates = req.body;
+      const comment = await storage.updateRoomComment(req.params.id, updates);
+      if (!comment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+      res.json(comment);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/room-comments/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const deleted = await storage.deleteRoomComment(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
 
   // Report routes
   app.get("/api/reports/ra-average-times", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req, res) => {
