@@ -235,10 +235,9 @@ export default function Settings() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="rooms">Rooms & Types</TabsTrigger>
           <TabsTrigger value="users">Users & Roles</TabsTrigger>
-          <TabsTrigger value="tasks">Task Templates</TabsTrigger>
           <TabsTrigger value="inspections">Inspection Items</TabsTrigger>
           <TabsTrigger value="email">Email Settings</TabsTrigger>
         </TabsList>
@@ -408,55 +407,6 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="tasks" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <ListChecks className="h-5 w-5" />
-                  Task Templates
-                </span>
-                <Button 
-                  onClick={() => setShowCreateTask(true)}
-                  data-testid="create-task-button"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Template
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingTasks ? (
-                <div className="animate-pulse space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-16 bg-muted rounded"></div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {tasks.map((task: any) => (
-                    <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <div className="font-semibold">{task.title}</div>
-                        <div className="text-sm text-muted-foreground">{task.description}</div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline">{task.type}</Badge>
-                          <Badge variant={
-                            task.priority === 'urgent' ? 'destructive' :
-                            task.priority === 'high' ? 'default' :
-                            task.priority === 'medium' ? 'secondary' : 'outline'
-                          }>
-                            {task.priority}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="inspections" className="space-y-4">
           <Card>

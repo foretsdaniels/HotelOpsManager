@@ -48,11 +48,17 @@ export default function Dashboard() {
     const unsubscribeInspection = subscribe('inspection_completed', () => {
       queryClient.invalidateQueries({ queryKey: ["/api/inspections"] });
     });
+    
+    const unsubscribeRoomStatus = subscribe('room_status_changed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inspections"] });
+    });
 
     return () => {
       unsubscribeTask();
       unsubscribeTaskCompleted();
       unsubscribeInspection();
+      unsubscribeRoomStatus();
     };
   }, [subscribe]);
 
@@ -64,30 +70,75 @@ export default function Dashboard() {
   ).length;
   const inspectionsPending = inspections.filter((inspection: any) => !inspection.signedAt).length;
 
-  // Mock recent activity data
-  const recentActivity: ActivityItem[] = [
-    {
-      id: "1",
-      description: "Room 201 cleaning completed by Sarah M.",
-      timestamp: "2 minutes ago",
-      status: "completed",
+  // Get recent activity from tasks and inspections
+  const recentActivity: ActivityItem[] = [];
+  
+  // Add recent tasks to activity
+  tasks.slice(0, 5).forEach((task: any) => {
+    const taskDate = new Date(task.updatedAt || task.createdAt);
+    const now = new Date();
+    const diffMinutes = Math.floor((now.getTime() - taskDate.getTime()) / 60000);
+    let timestamp = "just now";
+    if (diffMinutes > 0) {
+      if (diffMinutes < 60) {
+        timestamp = `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+      } else if (diffMinutes < 1440) {
+        const hours = Math.floor(diffMinutes / 60);
+        timestamp = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      } else {
+        const days = Math.floor(diffMinutes / 1440);
+        timestamp = `${days} day${days > 1 ? 's' : ''} ago`;
+      }
+    }
+    
+    recentActivity.push({
+      id: task.id,
+      description: task.status === 'completed' 
+        ? `${task.title} completed`
+        : task.status === 'in_progress'
+        ? `${task.title} in progress`
+        : `${task.title} created`,
+      timestamp,
+      status: task.status,
       type: "task",
-    },
-    {
-      id: "2", 
-      description: "New special task created for banquet hall setup",
-      timestamp: "15 minutes ago",
-      status: "pending",
-      type: "task",
-    },
-    {
-      id: "3",
-      description: "Room inspection started for Room 412",
-      timestamp: "32 minutes ago", 
-      status: "in_progress",
+    });
+  });
+  
+  // Add recent inspections to activity
+  inspections.slice(0, 3).forEach((inspection: any) => {
+    const inspectionDate = new Date(inspection.updatedAt || inspection.createdAt);
+    const now = new Date();
+    const diffMinutes = Math.floor((now.getTime() - inspectionDate.getTime()) / 60000);
+    let timestamp = "just now";
+    if (diffMinutes > 0) {
+      if (diffMinutes < 60) {
+        timestamp = `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+      } else if (diffMinutes < 1440) {
+        const hours = Math.floor(diffMinutes / 60);
+        timestamp = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      } else {
+        const days = Math.floor(diffMinutes / 1440);
+        timestamp = `${days} day${days > 1 ? 's' : ''} ago`;
+      }
+    }
+    
+    recentActivity.push({
+      id: inspection.id,
+      description: inspection.signedAt
+        ? `${inspection.kind} inspection completed`
+        : `${inspection.kind} inspection pending`,
+      timestamp,
+      status: inspection.signedAt ? "completed" : "pending",
       type: "inspection",
-    },
-  ];
+    });
+  });
+  
+  // Sort by most recent and take top 5
+  recentActivity.sort((a, b) => {
+    const aMinutes = parseInt(a.timestamp) || 0;
+    const bMinutes = parseInt(b.timestamp) || 0;
+    return aMinutes - bMinutes;
+  }).slice(0, 5);
 
   const getActivityIcon = (type: string, status: string) => {
     if (status === "completed") {
@@ -154,10 +205,10 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Recent Activity */}
+      {/* Activity Log */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle>Activity Log</CardTitle>
           <Button variant="ghost" size="sm">
             View All
           </Button>
