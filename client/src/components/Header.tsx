@@ -104,14 +104,6 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                   {user?.role?.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={logout}
-                data-testid="logout-button"
-              >
-                Logout
-              </Button>
             </div>
           </div>
         </div>

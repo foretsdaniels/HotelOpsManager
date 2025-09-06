@@ -3,6 +3,7 @@ import KPICard from "@/components/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import StatusChip from "@/components/StatusChip";
+import { useLocation } from "wouter";
 import { 
   CheckSquare, 
   Wrench, 
@@ -21,6 +22,7 @@ import {
 import { ActivityItem } from "@/types";
 
 export default function Dashboard() {
+  const [location, navigate] = useLocation();
   const { data: tasks = [] } = useQuery<any[]>({
     queryKey: ["/api/tasks"],
   });
@@ -72,11 +74,11 @@ export default function Dashboard() {
   };
 
   const quickActions = [
-    { icon: Plus, label: "New Task", action: "createTask" },
-    { icon: ClipboardList, label: "Inspection", action: "createInspection" },
-    { icon: Search, label: "Lost Item", action: "reportLostItem" },
-    { icon: BarChart3, label: "Reports", action: "viewReports" },
-    { icon: UserPlus, label: "RA Monitor", action: "raMonitor" },
+    { icon: Plus, label: "New Task", action: "/tasks", href: "/tasks" },
+    { icon: ClipboardList, label: "Inspection", action: "/inspections", href: "/inspections" },
+    { icon: Search, label: "Room Status", action: "/room-status", href: "/room-status" },
+    { icon: BarChart3, label: "Reports", action: "/reports", href: "/reports" },
+    { icon: UserPlus, label: "RA Monitor", action: "/ra-monitor", href: "/ra-monitor" },
   ];
 
   return (
@@ -112,6 +114,7 @@ export default function Dashboard() {
                   variant="outline"
                   className="touch-target flex flex-col items-center justify-center p-4 h-auto hover:bg-muted/80"
                   data-testid={`quick-action-${action.action}`}
+                  onClick={() => navigate(action.href)}
                 >
                   <Icon className="h-5 w-5 text-primary mb-2" />
                   <span className="text-xs font-medium">{action.label}</span>
