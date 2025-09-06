@@ -399,33 +399,53 @@ export default function FrontDesk() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {roomAttendants.map((attendant: User) => {
+                  {roomAttendants
+                    .filter((attendant: User) => {
+                      // Only show attendants who have rooms assigned
+                      const assignedRooms = roomsWithStatus.filter((r: any) => 
+                        r.assignedUser?.id === attendant.id
+                      );
+                      return assignedRooms.length > 0;
+                    })
+                    .map((attendant: User) => {
+                      const assignedRooms = roomsWithStatus.filter((r: any) => 
+                        r.assignedUser?.id === attendant.id
+                      );
+                      
+                      return (
+                        <Card key={attendant.id} className="border-l-4 border-l-blue-500">
+                          <CardContent className="pt-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-semibold">{attendant.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {assignedRooms.length} {assignedRooms.length === 1 ? 'room' : 'rooms'} assigned
+                                </div>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {assignedRooms.map((room: any) => (
+                                  <Badge key={room.id} variant="outline">
+                                    {room.number}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  {roomAttendants.filter((attendant: User) => {
                     const assignedRooms = roomsWithStatus.filter((r: any) => 
                       r.assignedUser?.id === attendant.id
                     );
-                    
-                    return (
-                      <Card key={attendant.id} className="border-l-4 border-l-blue-500">
-                        <CardContent className="pt-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-semibold">{attendant.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {assignedRooms.length} rooms assigned
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {assignedRooms.map((room: any) => (
-                                <Badge key={room.id} variant="outline">
-                                  {room.number}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                    return assignedRooms.length > 0;
+                  }).length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No room assignments at this time.</p>
+                      <p className="text-sm mt-2">Assign rooms to attendants from the Room Overview tab.</p>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
