@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import type { Room, User, Task, RoomComment } from "@shared/schema";
+import type { Room, User, Task, RoomComment, RoomAssignment } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -51,24 +51,25 @@ export default function FrontDesk() {
     queryKey: ["/api/room-comments"],
   });
 
+  const { data: roomAssignments = [] } = useQuery<RoomAssignment[]>({
+    queryKey: ["/api/room-assignments"],
+  });
+
   // Filter room attendants for assignment
   const roomAttendants = users.filter((u: User) => u.role === "room_attendant");
 
   // Create room lookup with current assignments and status
   const roomsWithStatus = rooms.map((room: Room) => {
-    const roomTasks = tasks.filter((task: Task) => task.roomId === room.id && !task.isDeleted);
-    const activeTask = roomTasks.find((task: Task) => 
-      task.status === "in_progress" || task.status === "pending"
-    );
     const comments = roomComments.filter((comment: RoomComment) => 
       comment.roomId === room.id && !comment.isResolved
     );
-    const assignedUser = activeTask ? users.find((u: User) => u.id === activeTask.assigneeId) : null;
+    const assignment = roomAssignments.find((a: RoomAssignment) => a.roomId === room.id);
+    const assignedUser = assignment ? users.find((u: User) => u.id === assignment.userId) : null;
 
     return {
       ...room,
       assignedUser,
-      activeTask,
+      assignment,
       openComments: comments.length,
       urgentComments: comments.filter((c: any) => c.priority === "urgent").length,
     };
@@ -96,14 +97,9 @@ export default function FrontDesk() {
     mutationFn: async (data: { roomIds: string[]; assigneeId: string }) => {
       const results = [];
       for (const roomId of data.roomIds) {
-        const result = await apiRequest("POST", "/api/tasks", {
-          title: `Clean Room ${rooms.find((r: Room) => r.id === roomId)?.number}`,
-          description: `Daily cleaning assignment for room ${rooms.find((r: Room) => r.id === roomId)?.number}`,
-          type: "cleaning",
-          priority: "medium",
-          status: "pending",
+        const result = await apiRequest("POST", "/api/room-assignments", {
           roomId,
-          assigneeId: data.assigneeId,
+          userId: data.assigneeId,
         });
         results.push(result);
       }
@@ -112,7 +108,7 @@ export default function FrontDesk() {
     onSuccess: () => {
       toast({ title: "Room assignments created successfully" });
       // Invalidate all related queries to ensure data sync
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/room-assignments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
       queryClient.invalidateQueries({ queryKey: ["/api/room-comments"] });
       setShowRoomAssignment(false);

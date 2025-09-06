@@ -31,8 +31,12 @@ export default function Dashboard() {
     queryKey: ["/api/inspections"],
   });
 
-  // Calculate KPI metrics - count non-completed and non-deleted tasks
-  const myTasks = tasks.filter((task: any) => task.status !== "completed" && !task.isDeleted).length;
+  // Calculate KPI metrics - count special tasks only (not cleaning assignments)
+  const myTasks = tasks.filter((task: any) => 
+    task.status !== "completed" && 
+    !task.isDeleted && 
+    task.type !== "cleaning"
+  ).length;
   const inspectionsPending = inspections.filter((inspection: any) => !inspection.signedAt).length;
 
   // Mock recent activity data

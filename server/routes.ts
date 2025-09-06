@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { 
   loginSchema, insertUserSchema, insertTaskSchema, insertRoomSchema,
   insertInspectionSchema, insertWorkOrderSchema, insertPMTemplateSchema,
-  insertPMInstanceSchema, insertPanicEventSchema, insertRoomCommentSchema
+  insertPMInstanceSchema, insertPanicEventSchema, insertRoomAssignmentSchema, insertRoomCommentSchema
 } from "@shared/schema";
 import { generateToken, hashPassword, comparePassword, canReceivePanicAlerts } from "./auth";
 import { authenticateToken, requireRole, requireAuth, type AuthenticatedRequest } from "./middleware";
@@ -540,6 +540,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Room not found" });
       }
       res.status(200).json({ message: "Room deleted successfully" });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Room assignment routes
+  app.post("/api/room-assignments", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const assignmentData = insertRoomAssignmentSchema.parse({
+        ...req.body,
+        assignedById: req.user!.userId,
+      });
+      const assignment = await storage.createRoomAssignment(assignmentData);
+      res.status(201).json(assignment);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/room-assignments", authenticateToken, async (req, res) => {
+    try {
+      const { roomId, userId } = req.query;
+      const assignments = await storage.listRoomAssignments(
+        roomId as string,
+        userId as string
+      );
+      res.json(assignments);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/room-assignments/:roomId/:userId", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req, res) => {
+    try {
+      const deleted = await storage.deleteRoomAssignment(req.params.roomId, req.params.userId);
+      if (!deleted) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+      res.status(200).json({ message: "Assignment deleted successfully" });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }

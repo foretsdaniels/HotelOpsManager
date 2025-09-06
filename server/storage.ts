@@ -3,7 +3,7 @@ import {
   type Task, type InsertTask, type TaskPhoto, type Inspection, type InsertInspection,
   type WorkOrder, type InsertWorkOrder, type PMTemplate, type InsertPMTemplate,
   type PMInstance, type InsertPMInstance, type PanicEvent, type InsertPanicEvent,
-  type ReportRun, type InsertReportRun, type RoomComment, type InsertRoomComment
+  type ReportRun, type InsertReportRun, type RoomAssignment, type InsertRoomAssignment, type RoomComment, type InsertRoomComment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import fs from "fs/promises";
@@ -21,6 +21,7 @@ const DATA_FILES = {
   pmInstances: path.join(DATA_DIR, "pm-instances.json"),
   panicEvents: path.join(DATA_DIR, "panic-events.json"),
   reportRuns: path.join(DATA_DIR, "report-runs.json"),
+  roomAssignments: path.join(DATA_DIR, "room-assignments.json"),
   roomComments: path.join(DATA_DIR, "room-comments.json"),
 };
 
@@ -84,6 +85,11 @@ export interface IStorage {
   getReportRun(id: string): Promise<ReportRun | undefined>;
   listReportRuns(): Promise<ReportRun[]>;
   
+  // Room Assignments
+  createRoomAssignment(assignment: InsertRoomAssignment): Promise<RoomAssignment>;
+  deleteRoomAssignment(roomId: string, userId: string): Promise<boolean>;
+  listRoomAssignments(roomId?: string, userId?: string): Promise<RoomAssignment[]>;
+  
   // Room Comments
   getRoomComment(id: string): Promise<RoomComment | undefined>;
   createRoomComment(comment: InsertRoomComment): Promise<RoomComment>;
@@ -109,6 +115,7 @@ export class MemStorage implements IStorage {
     pmInstances: Map<string, PMInstance>;
     panicEvents: Map<string, PanicEvent>;
     reportRuns: Map<string, ReportRun>;
+    roomAssignments: Map<string, RoomAssignment>;
     roomComments: Map<string, RoomComment>;
   };
 
@@ -124,6 +131,7 @@ export class MemStorage implements IStorage {
       pmInstances: new Map(),
       panicEvents: new Map(),
       reportRuns: new Map(),
+      roomAssignments: new Map(),
       roomComments: new Map(),
     };
     this.loadData().then(() => this.seedDemoData());
@@ -743,6 +751,53 @@ export class MemStorage implements IStorage {
     this.data.roomComments.set(id, updatedComment);
     await this.saveData('roomComments');
     return updatedComment;
+  }
+
+  // Room Assignments
+  async createRoomAssignment(insertAssignment: InsertRoomAssignment): Promise<RoomAssignment> {
+    const id = randomUUID();
+    const assignment: RoomAssignment = {
+      ...insertAssignment,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    // Remove any existing assignment for this room
+    const existing = Array.from(this.data.roomAssignments.values())
+      .find(a => a.roomId === insertAssignment.roomId);
+    if (existing) {
+      this.data.roomAssignments.delete(existing.id);
+    }
+    
+    this.data.roomAssignments.set(id, assignment);
+    await this.saveData('roomAssignments');
+    return assignment;
+  }
+
+  async deleteRoomAssignment(roomId: string, userId: string): Promise<boolean> {
+    const assignment = Array.from(this.data.roomAssignments.values())
+      .find(a => a.roomId === roomId && a.userId === userId);
+    
+    if (!assignment) return false;
+    
+    this.data.roomAssignments.delete(assignment.id);
+    await this.saveData('roomAssignments');
+    return true;
+  }
+
+  async listRoomAssignments(roomId?: string, userId?: string): Promise<RoomAssignment[]> {
+    let assignments = Array.from(this.data.roomAssignments.values());
+    
+    if (roomId) {
+      assignments = assignments.filter(a => a.roomId === roomId);
+    }
+    
+    if (userId) {
+      assignments = assignments.filter(a => a.userId === userId);
+    }
+    
+    return assignments;
   }
 
   async listRoomComments(roomId?: string): Promise<RoomComment[]> {

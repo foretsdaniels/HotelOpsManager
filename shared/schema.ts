@@ -155,6 +155,16 @@ export const reportRuns = pgTable("report_runs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Room Assignments
+export const roomAssignments = pgTable("room_assignments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  roomId: varchar("room_id").references(() => rooms.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  assignedById: varchar("assigned_by_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Room Comments
 export const roomComments = pgTable("room_comments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -227,6 +237,12 @@ export const insertReportRunSchema = createInsertSchema(reportRuns).omit({
   createdAt: true,
 });
 
+export const insertRoomAssignmentSchema = createInsertSchema(roomAssignments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertRoomCommentSchema = createInsertSchema(roomComments).omit({
   id: true,
   createdAt: true,
@@ -253,6 +269,8 @@ export type PanicEvent = typeof panicEvents.$inferSelect;
 export type InsertPanicEvent = z.infer<typeof insertPanicEventSchema>;
 export type ReportRun = typeof reportRuns.$inferSelect;
 export type InsertReportRun = z.infer<typeof insertReportRunSchema>;
+export type RoomAssignment = typeof roomAssignments.$inferSelect;
+export type InsertRoomAssignment = z.infer<typeof insertRoomAssignmentSchema>;
 export type RoomComment = typeof roomComments.$inferSelect;
 export type InsertRoomComment = z.infer<typeof insertRoomCommentSchema>;
 
