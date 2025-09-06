@@ -539,6 +539,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const comment = await storage.createRoomComment(commentData);
+      
+      // Send WebSocket notification for new room comment
+      try {
+        const commenter = await storage.getUser(req.user!.userId);
+        const room = await storage.getRoom(commentData.roomId);
+        
+        if (commenter) {
+          websocketService.broadcast({
+            type: 'user_notification',
+            data: {
+              message: `New comment added to Room ${room?.number || commentData.roomId}`,
+              comment,
+              commenter: {
+                name: commenter.name,
+                role: commenter.role
+              },
+              room
+            },
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (notificationError) {
+        console.error('Failed to send room comment notification:', notificationError);
+      }
+      
       res.status(201).json(comment);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -552,6 +577,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!comment) {
         return res.status(404).json({ error: "Comment not found" });
       }
+      
+      // Send WebSocket notification for updated room comment
+      try {
+        const updater = await storage.getUser(req.user!.userId);
+        const room = await storage.getRoom(comment.roomId);
+        
+        if (updater) {
+          websocketService.broadcast({
+            type: 'user_notification',
+            data: {
+              message: `Comment updated for Room ${room?.number || comment.roomId}`,
+              comment,
+              updater: {
+                name: updater.name,
+                role: updater.role
+              },
+              room
+            },
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (notificationError) {
+        console.error('Failed to send room comment update notification:', notificationError);
+      }
+      
       res.json(comment);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -560,10 +610,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/room-comments/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
+      // Get comment details before deletion for WebSocket notification
+      const originalComment = await storage.getRoomComment ? await storage.getRoomComment(req.params.id) : null;
+      
       const deleted = await storage.deleteRoomComment(req.params.id);
       if (!deleted) {
         return res.status(404).json({ error: "Comment not found" });
       }
+      
+      // Send WebSocket notification for deleted room comment
+      if (originalComment) {
+        try {
+          const deleter = await storage.getUser(req.user!.userId);
+          const room = await storage.getRoom(originalComment.roomId);
+          
+          if (deleter) {
+            websocketService.broadcast({
+              type: 'user_notification',
+              data: {
+                message: `Comment deleted from Room ${room?.number || originalComment.roomId}`,
+                commentId: req.params.id,
+                deleter: {
+                  name: deleter.name,
+                  role: deleter.role
+                },
+                room
+              },
+              timestamp: new Date().toISOString()
+            });
+          }
+        } catch (notificationError) {
+          console.error('Failed to send room comment deletion notification:', notificationError);
+        }
+      }
+      
       res.status(204).send();
     } catch (error: any) {
       res.status(400).json({ error: error.message });

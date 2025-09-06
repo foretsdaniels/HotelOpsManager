@@ -90,6 +90,9 @@ export class DailyResetService {
       // Clean up old completed tasks
       await this.cleanupCompletedTasks();
 
+      // Clear room comments from previous day
+      await this.clearRoomComments();
+
       // Update last reset date
       this.lastResetDate = today;
 
@@ -285,6 +288,29 @@ export class DailyResetService {
       console.log(`[DailyReset] Cleaned up ${completedTasks.length} completed tasks`);
     } catch (error) {
       console.error(`[DailyReset] Error cleaning up tasks:`, error);
+      throw error;
+    }
+  }
+
+  private async clearRoomComments(): Promise<void> {
+    console.log(`[DailyReset] Clearing room comments from previous day`);
+
+    try {
+      const comments = await storage.listRoomComments();
+      let clearedCount = 0;
+
+      for (const comment of comments) {
+        // Only clear non-system comments or resolved comments
+        // Keep unresolved high-priority comments for continuity
+        if (comment.userId === "system" || comment.isResolved || comment.priority !== "high") {
+          await storage.deleteRoomComment(comment.id);
+          clearedCount++;
+        }
+      }
+
+      console.log(`[DailyReset] Cleared ${clearedCount} room comments`);
+    } catch (error) {
+      console.error(`[DailyReset] Error clearing room comments:`, error);
       throw error;
     }
   }
