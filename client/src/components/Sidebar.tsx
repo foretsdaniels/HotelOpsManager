@@ -6,41 +6,41 @@ import {
   LayoutDashboard, 
   CheckSquare, 
   ClipboardCheck, 
-  Wrench, 
+  ClipboardList,
   Users, 
   Search, 
   BarChart3, 
   AlertCircle, 
   Settings,
-  Hotel
+  Hotel,
+  LogOut,
+  Clock
 } from "lucide-react";
 
 const navigationItems = [
   {
+    href: "/room-status",
+    label: "Room Status",
+    icon: CheckSquare,
+    roles: ["site_admin", "head_housekeeper", "room_attendant", "front_desk_manager"],
+  },
+  {
     href: "/",
     label: "Dashboard",
     icon: LayoutDashboard,
-    roles: ["site_admin", "head_housekeeper", "room_attendant", "maintenance", "front_desk_manager"],
+    roles: ["site_admin", "head_housekeeper", "room_attendant", "front_desk_manager"],
   },
   {
     href: "/tasks",
-    label: "Tasks",
-    icon: CheckSquare,
-    roles: ["site_admin", "head_housekeeper", "room_attendant", "maintenance", "front_desk_manager"],
-    badge: "taskCount",
+    label: "Special Tasks",
+    icon: ClipboardList,
+    roles: ["site_admin", "head_housekeeper", "room_attendant", "front_desk_manager"],
   },
   {
     href: "/inspections",
     label: "Inspections",
     icon: ClipboardCheck,
     roles: ["site_admin", "head_housekeeper"],
-  },
-  {
-    href: "/maintenance",
-    label: "Maintenance",
-    icon: Wrench,
-    roles: ["site_admin", "head_housekeeper", "maintenance", "front_desk_manager"],
-    badge: "woCount",
   },
   {
     href: "/ra-monitor",
@@ -53,12 +53,6 @@ const navigationItems = [
     label: "Front Desk",
     icon: Hotel,
     roles: ["site_admin", "front_desk_manager"],
-  },
-  {
-    href: "/room-status",
-    label: "Room Status",
-    icon: CheckSquare,
-    roles: ["site_admin", "head_housekeeper", "room_attendant", "maintenance", "front_desk_manager"],
   },
   {
     href: "/reports",
@@ -84,7 +78,7 @@ const adminItems = [
   {
     href: "/daily-reset",
     label: "Daily Reset",
-    icon: AlertCircle,
+    icon: Clock,
     roles: ["site_admin"],
   },
 ];
@@ -92,7 +86,7 @@ const adminItems = [
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [location, navigate] = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const hasAccess = (requiredRoles: string[]) => {
     return user?.role && requiredRoles.includes(user.role);
@@ -138,11 +132,6 @@ export default function Sidebar() {
                 >
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="ml-auto bg-accent text-accent-foreground text-xs px-2 py-1 rounded-full">
-                      {item.badge === "taskCount" ? "12" : "5"}
-                    </span>
-                  )}
                 </button>
               );
             })}
@@ -175,6 +164,23 @@ export default function Sidebar() {
                 </button>
               );
             })}
+            
+            <div className="border-t border-border my-4" />
+            
+            <button
+              onClick={() => {
+                logout();
+                setIsOpen(false);
+              }}
+              className={cn(
+                "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors",
+                "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+              data-testid="nav-logout"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Log Out</span>
+            </button>
           </nav>
         </div>
       </aside>
