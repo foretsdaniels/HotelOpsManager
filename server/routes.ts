@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { 
   loginSchema, insertUserSchema, insertTaskSchema, insertRoomSchema,
   insertInspectionSchema, insertWorkOrderSchema, insertPMTemplateSchema,
-  insertPMInstanceSchema, insertPanicEventSchema, insertLostFoundItemSchema
+  insertPMInstanceSchema, insertPanicEventSchema
 } from "@shared/schema";
 import { generateToken, hashPassword, comparePassword, canReceivePanicAlerts } from "./auth";
 import { authenticateToken, requireRole, requireAuth, type AuthenticatedRequest } from "./middleware";
@@ -356,71 +356,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Lost & Found routes
-  app.post("/api/lf/report", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const itemData = insertLostFoundItemSchema.parse({
-        ...req.body,
-        foundById: req.user!.userId,
-      });
-      
-      const item = await storage.createLostFoundItem(itemData);
-      res.status(201).json(item);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/lf/:id/storage", authenticateToken, async (req, res) => {
-    try {
-      const { storageArea } = req.body;
-      const item = await storage.updateLostFoundItem(req.params.id, {
-        storageArea,
-        status: "stored",
-      });
-      if (!item) {
-        return res.status(404).json({ error: "Item not found" });
-      }
-      res.json(item);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/lf/:id/return", authenticateToken, async (req, res) => {
-    try {
-      const item = await storage.updateLostFoundItem(req.params.id, {
-        status: "returned",
-      });
-      if (!item) {
-        return res.status(404).json({ error: "Item not found" });
-      }
-      res.json(item);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/lf/bulk-clear-expired", authenticateToken, requireRole(["site_admin", "head_housekeeper"]), async (req, res) => {
-    try {
-      const count = await storage.bulkClearExpired();
-      res.json({ clearedCount: count });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.get("/api/lf", authenticateToken, async (req, res) => {
-    try {
-      const { status } = req.query;
-      const items = await storage.listLostFoundItems({
-        status: status as string,
-      });
-      res.json(items);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
 
   // Report routes
   app.get("/api/reports/ra-average-times", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req, res) => {

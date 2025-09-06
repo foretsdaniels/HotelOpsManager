@@ -695,61 +695,6 @@ export class MemStorage implements IStorage {
     return Array.from(this.data.panicEvents.values());
   }
 
-  // Lost & Found
-  async getLostFoundItem(id: string): Promise<LostFoundItem | undefined> {
-    return this.data.lostFoundItems.get(id);
-  }
-
-  async createLostFoundItem(insertItem: InsertLostFoundItem): Promise<LostFoundItem> {
-    const id = randomUUID();
-    const item: LostFoundItem = {
-      ...insertItem,
-      id,
-      status: insertItem.status ?? null,
-      storageArea: insertItem.storageArea ?? null,
-      expireAt: insertItem.expireAt ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.data.lostFoundItems.set(id, item);
-    await this.saveData('lostFoundItems');
-    return item;
-  }
-
-  async updateLostFoundItem(id: string, updates: Partial<LostFoundItem>): Promise<LostFoundItem | undefined> {
-    const item = this.data.lostFoundItems.get(id);
-    if (!item) return undefined;
-    
-    const updatedItem = { ...item, ...updates, updatedAt: new Date() };
-    this.data.lostFoundItems.set(id, updatedItem);
-    await this.saveData('lostFoundItems');
-    return updatedItem;
-  }
-
-  async listLostFoundItems(filters?: { status?: string }): Promise<LostFoundItem[]> {
-    let items = Array.from(this.data.lostFoundItems.values());
-    
-    if (filters?.status) {
-      items = items.filter(item => item.status === filters.status);
-    }
-    
-    return items;
-  }
-
-  async bulkClearExpired(): Promise<number> {
-    const now = new Date();
-    let clearedCount = 0;
-    
-    for (const [id, item] of this.data.lostFoundItems.entries()) {
-      if (item.expireAt && new Date(item.expireAt) < now && item.status !== 'expired_cleared') {
-        await this.updateLostFoundItem(id, { status: 'expired_cleared' });
-        clearedCount++;
-      }
-    }
-    
-    return clearedCount;
-  }
-
   // Reports
   async createReportRun(insertReport: InsertReportRun): Promise<ReportRun> {
     const id = randomUUID();

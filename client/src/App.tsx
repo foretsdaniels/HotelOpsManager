@@ -11,7 +11,6 @@ import Tasks from "@/pages/Tasks";
 import Inspections from "@/pages/Inspections";
 import Maintenance from "@/pages/Maintenance";
 import RAMonitor from "@/pages/RAMonitor";
-import LostFound from "@/pages/LostFound";
 import Reports from "@/pages/Reports";
 import PanicLog from "@/pages/PanicLog";
 import NotFound from "@/pages/not-found";
@@ -43,11 +42,6 @@ function Router() {
       <Route path="/ra-monitor" component={() => (
         <Layout>
           <RAMonitor />
-        </Layout>
-      )} />
-      <Route path="/lost-found" component={() => (
-        <Layout>
-          <LostFound />
         </Layout>
       )} />
       <Route path="/reports" component={() => (

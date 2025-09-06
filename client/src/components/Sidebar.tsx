@@ -48,12 +48,6 @@ const navigationItems = [
     roles: ["site_admin", "head_housekeeper", "front_desk_manager"],
   },
   {
-    href: "/lost-found",
-    label: "Lost & Found",
-    icon: Search,
-    roles: ["site_admin", "head_housekeeper", "room_attendant", "front_desk_manager"],
-  },
-  {
     href: "/reports",
     label: "Reports",
     icon: BarChart3,
