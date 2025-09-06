@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { queryClient } from "@/lib/queryClient";
 import RoomStatusSelector from "@/components/RoomStatusSelector";
 import RoomComments from "@/components/RoomComments";
 import RoomAssignmentManager from "@/components/RoomAssignmentManager";
@@ -37,10 +39,32 @@ const STATUS_FILTERS = [
 
 export default function RoomStatus() {
   const { user } = useAuth();
+  const { isConnected: wsConnected, subscribe } = useWebSocket();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [floorFilter, setFloorFilter] = useState("all");
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+
+  // Subscribe to WebSocket updates for real-time room status changes
+  useEffect(() => {
+    const unsubscribeRoomStatus = subscribe('room_status_changed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+    });
+    
+    const unsubscribeTaskAssigned = subscribe('task_assigned', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+    
+    const unsubscribeTaskCompleted = subscribe('task_completed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+
+    return () => {
+      unsubscribeRoomStatus();
+      unsubscribeTaskAssigned();
+      unsubscribeTaskCompleted();
+    };
+  }, [subscribe]);
 
   const { data: rooms = [], isLoading } = useQuery<Room[]>({
     queryKey: ["/api/rooms"],

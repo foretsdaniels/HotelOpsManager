@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Room, User, Task, RoomComment, RoomAssignment } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import RoomComments from "@/components/RoomComments";
 import RoomStatusSelector from "@/components/RoomStatusSelector";
 import { 
@@ -30,10 +31,32 @@ import { format } from "date-fns";
 export default function FrontDesk() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isConnected: wsConnected, subscribe } = useWebSocket();
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [showRoomAssignment, setShowRoomAssignment] = useState(false);
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
   const [assigneeId, setAssigneeId] = useState("");
+
+  // Subscribe to WebSocket updates for real-time data
+  useEffect(() => {
+    const unsubscribeRoomStatus = subscribe('room_status_changed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+    });
+    
+    const unsubscribeTaskAssigned = subscribe('task_assigned', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+    
+    const unsubscribeTaskCompleted = subscribe('task_completed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+
+    return () => {
+      unsubscribeRoomStatus();
+      unsubscribeTaskAssigned();
+      unsubscribeTaskCompleted();
+    };
+  }, [subscribe]);
 
   const { data: rooms = [], isLoading: loadingRooms } = useQuery<Room[]>({
     queryKey: ["/api/rooms"],

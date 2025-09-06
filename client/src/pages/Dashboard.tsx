@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import KPICard from "@/components/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import StatusChip from "@/components/StatusChip";
 import { useLocation } from "wouter";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { queryClient } from "@/lib/queryClient";
 import { 
   CheckSquare, 
   Wrench, 
@@ -23,6 +26,7 @@ import { ActivityItem } from "@/types";
 
 export default function Dashboard() {
   const [location, navigate] = useLocation();
+  const { isConnected: wsConnected, subscribe } = useWebSocket();
   const { data: tasks = [] } = useQuery<any[]>({
     queryKey: ["/api/tasks"],
   });
@@ -30,6 +34,27 @@ export default function Dashboard() {
   const { data: inspections = [] } = useQuery<any[]>({
     queryKey: ["/api/inspections"],
   });
+
+  // Subscribe to WebSocket updates for real-time dashboard updates
+  useEffect(() => {
+    const unsubscribeTask = subscribe('task_assigned', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+    
+    const unsubscribeTaskCompleted = subscribe('task_completed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+    
+    const unsubscribeInspection = subscribe('inspection_completed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/inspections"] });
+    });
+
+    return () => {
+      unsubscribeTask();
+      unsubscribeTaskCompleted();
+      unsubscribeInspection();
+    };
+  }, [subscribe]);
 
   // Calculate KPI metrics - count special tasks only (not cleaning assignments)
   const myTasks = tasks.filter((task: any) => 
