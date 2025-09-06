@@ -60,16 +60,22 @@ export default function FrontDesk() {
       }
     });
 
-    const unsubscribeRoomAssignments = subscribe('room_assignment_created', () => {
+    const unsubscribeRoomAssignments = subscribe('room_assignment_created', (message) => {
+      console.log('Room assignment created, refreshing data...', message);
+      // Force refresh all data related to room assignments
       queryClient.invalidateQueries({ queryKey: ["/api/room-assignments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
     });
 
-    const unsubscribeRoomAssignmentDeleted = subscribe('room_assignment_deleted', () => {
+    const unsubscribeRoomAssignmentDeleted = subscribe('room_assignment_deleted', (message) => {
+      console.log('Room assignment deleted, refreshing data...', message);
+      // Force refresh all data related to room assignments
       queryClient.invalidateQueries({ queryKey: ["/api/room-assignments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
     });
 
     return () => {
@@ -98,8 +104,9 @@ export default function FrontDesk() {
     queryKey: ["/api/room-comments"],
   });
 
-  const { data: roomAssignments = [] } = useQuery<RoomAssignment[]>({
+  const { data: roomAssignments = [], refetch: refetchAssignments } = useQuery<RoomAssignment[]>({
     queryKey: ["/api/room-assignments"],
+    refetchInterval: 5000, // Refetch every 5 seconds as a fallback
   });
 
   // Filter room attendants for assignment
