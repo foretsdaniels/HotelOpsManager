@@ -32,7 +32,6 @@ const STATUS_FILTERS = [
   { value: "roll", label: "ROLL", icon: Clock, color: "text-yellow-500" },
   { value: "out", label: "OUT", icon: DoorOpen, color: "text-gray-500" },
   { value: "clean_inspected", label: "Clean & Inspected", icon: Sparkles, color: "text-green-500" },
-  { value: "clean", label: "Clean", icon: CheckCircle, color: "text-green-500" },
   { value: "out_of_order", label: "Out of Order", icon: Building, color: "text-gray-500" },
   { value: "maintenance", label: "Maintenance", icon: Building, color: "text-amber-500" },
 ];

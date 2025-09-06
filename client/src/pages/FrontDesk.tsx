@@ -124,7 +124,6 @@ export default function FrontDesk() {
     roll: roomsWithStatus.filter((r: any) => r.status === "roll").length,
     out: roomsWithStatus.filter((r: any) => r.status === "out").length,
     cleanInspected: roomsWithStatus.filter((r: any) => r.status === "clean_inspected").length,
-    clean: roomsWithStatus.filter((r: any) => r.status === "clean").length,
     outOfOrder: roomsWithStatus.filter((r: any) => r.status === "out_of_order").length,
     maintenance: roomsWithStatus.filter((r: any) => r.status === "maintenance").length,
   };

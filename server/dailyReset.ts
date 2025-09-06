@@ -246,7 +246,7 @@ export class DailyResetService {
 
         if (room.status !== newStatus) {
           await storage.updateRoom(room.id, { 
-            status: newStatus as "dirty" | "clean" | "out_of_order" | "maintenance" | "ready" | "roll" | "out" | "clean_inspected",
+            status: newStatus as "dirty" | "out_of_order" | "maintenance" | "ready" | "roll" | "out" | "clean_inspected",
             updatedAt: new Date()
           });
 

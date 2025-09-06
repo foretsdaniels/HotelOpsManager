@@ -31,7 +31,6 @@ const ROOM_STATUSES = [
   { value: "roll", label: "ROLL", color: "bg-yellow-100 text-yellow-800", icon: Clock },
   { value: "out", label: "OUT", color: "bg-gray-100 text-gray-800", icon: DoorOpen },
   { value: "clean_inspected", label: "Clean & Inspected", color: "bg-green-100 text-green-800", icon: Sparkles },
-  { value: "clean", label: "Clean", color: "bg-green-100 text-green-800", icon: CheckCircle },
   { value: "out_of_order", label: "Out of Order", color: "bg-red-100 text-red-800", icon: Settings },
   { value: "maintenance", label: "Maintenance", color: "bg-amber-100 text-amber-800", icon: Settings },
 ];
