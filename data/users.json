@@ -9,49 +9,5 @@
     "id": "be940a5c-2175-47c2-960b-e77288404f77",
     "createdAt": "2025-09-06T02:17:57.564Z",
     "updatedAt": "2025-09-06T02:17:57.564Z"
-  },
-  {
-    "name": "Sarah Johnson",
-    "email": "sarah@hotel.com",
-    "role": "head_housekeeper",
-    "passwordHash": "$2b$12$6lROqcqWpoF2ykLvncsAiOCnfOZs3LcOVdYfZr.HBJgMUoZU2PdyG",
-    "phone": "+1-555-0102",
-    "canReceivePanicAlerts": true,
-    "id": "74b43b73-f29c-4d0d-b004-589bf1407504",
-    "createdAt": "2025-09-06T02:17:57.564Z",
-    "updatedAt": "2025-09-06T02:17:57.564Z"
-  },
-  {
-    "name": "Mike Wilson",
-    "email": "mike@hotel.com",
-    "role": "maintenance",
-    "passwordHash": "$2b$12$k7l/5nK6sigZjJfghmJKoeeqCfgPgCZOYjmp9wiV9ms2Bqf70/vnS",
-    "phone": "+1-555-0103",
-    "canReceivePanicAlerts": false,
-    "id": "134549bd-8e73-4a24-964b-45e7a7d8a3e5",
-    "createdAt": "2025-09-06T02:17:57.564Z",
-    "updatedAt": "2025-09-06T02:17:57.564Z"
-  },
-  {
-    "name": "Lisa Chen",
-    "email": "lisa@hotel.com",
-    "role": "room_attendant",
-    "passwordHash": "$2b$12$sbCbZGIW3H7CK19NTyDxbuBKy59Q6FWFU6yeWGy1ka8M34nqFVVUe",
-    "phone": "+1-555-0104",
-    "canReceivePanicAlerts": false,
-    "id": "5f10d969-eac5-4a1f-af20-35e1648c8024",
-    "createdAt": "2025-09-06T02:17:57.564Z",
-    "updatedAt": "2025-09-06T02:17:57.564Z"
-  },
-  {
-    "name": "David Rodriguez",
-    "email": "david@hotel.com",
-    "role": "front_desk_manager",
-    "passwordHash": "$2b$12$V4tu2idEEEesOHx.EVttcOuuz1.jSuZYNip/aXN1UBHRxLViHxJvG",
-    "phone": "+1-555-0105",
-    "canReceivePanicAlerts": true,
-    "id": "ae1a211c-6825-4db9-8f3c-0bffcca67b5e",
-    "createdAt": "2025-09-06T02:17:57.564Z",
-    "updatedAt": "2025-09-06T02:17:57.564Z"
   }
 ]

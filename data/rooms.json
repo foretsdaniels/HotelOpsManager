@@ -8,5 +8,15 @@
     "status": "clean_inspected",
     "createdAt": "2025-09-06T04:24:04.127Z",
     "updatedAt": "2025-09-06T06:27:21.268Z"
+  },
+  {
+    "number": "104",
+    "type": "KING",
+    "floor": 1,
+    "squareFootage": 320,
+    "id": "c74acf34-baac-444f-8b26-9894deb7dff0",
+    "status": null,
+    "createdAt": "2025-09-06T06:32:37.777Z",
+    "updatedAt": "2025-09-06T06:32:37.777Z"
   }
 ]
