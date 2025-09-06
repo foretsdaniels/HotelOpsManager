@@ -5,9 +5,9 @@
     "floor": 1,
     "squareFootage": 320,
     "id": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
-    "status": "ready",
+    "status": "clean_inspected",
     "createdAt": "2025-09-06T04:24:04.127Z",
-    "updatedAt": "2025-09-06T06:41:47.483Z"
+    "updatedAt": "2025-09-06T06:27:21.268Z"
   },
   {
     "number": "104",
@@ -15,8 +15,8 @@
     "floor": 1,
     "squareFootage": 320,
     "id": "c74acf34-baac-444f-8b26-9894deb7dff0",
-    "status": "ready",
+    "status": null,
     "createdAt": "2025-09-06T06:32:37.777Z",
-    "updatedAt": "2025-09-06T06:41:20.608Z"
+    "updatedAt": "2025-09-06T06:32:37.777Z"
   }
 ]
