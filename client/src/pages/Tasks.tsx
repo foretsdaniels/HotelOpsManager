@@ -325,7 +325,7 @@ export default function Tasks() {
                   <SelectValue placeholder="Select room" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Room</SelectItem>
+                  <SelectItem value="none">No Room</SelectItem>
                   {rooms.map((room: any) => (
                     <SelectItem key={room.id} value={room.id}>
                       Room {room.number}

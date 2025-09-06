@@ -101,6 +101,7 @@ export default function FrontDesk() {
           description: `Daily cleaning assignment for room ${rooms.find((r: Room) => r.id === roomId)?.number}`,
           type: "cleaning",
           priority: "medium",
+          status: "pending",
           roomId,
           assigneeId: data.assigneeId,
         });
