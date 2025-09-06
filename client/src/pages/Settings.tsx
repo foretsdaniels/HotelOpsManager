@@ -102,7 +102,7 @@ export default function Settings() {
     queryKey: ["/api/tasks"],
   });
 
-  const { data: emailStatus, isLoading: loadingEmailStatus } = useQuery({
+  const { data: emailStatus = {}, isLoading: loadingEmailStatus } = useQuery({
     queryKey: ["/api/admin/email-status"],
     enabled: user?.role === "site_admin",
   });
@@ -584,28 +584,28 @@ export default function Settings() {
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    {emailStatus?.connected ? (
+                    {(emailStatus as any)?.connected ? (
                       <CheckCircle className="h-5 w-5 text-green-600" />
                     ) : (
                       <XCircle className="h-5 w-5 text-red-600" />
                     )}
                     <span className="font-medium">
-                      Email Service: {emailStatus?.connected ? "Connected" : "Not Connected"}
+                      Email Service: {(emailStatus as any)?.connected ? "Connected" : "Not Connected"}
                     </span>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="font-medium">SMTP Host:</span>
-                      <p className="text-muted-foreground">{emailStatus?.config?.host}</p>
+                      <p className="text-muted-foreground">{(emailStatus as any)?.config?.host}</p>
                     </div>
                     <div>
                       <span className="font-medium">Port:</span>
-                      <p className="text-muted-foreground">{emailStatus?.config?.port}</p>
+                      <p className="text-muted-foreground">{(emailStatus as any)?.config?.port}</p>
                     </div>
                     <div>
                       <span className="font-medium">From Address:</span>
-                      <p className="text-muted-foreground">{emailStatus?.config?.from}</p>
+                      <p className="text-muted-foreground">{(emailStatus as any)?.config?.from}</p>
                     </div>
                   </div>
                 </div>
@@ -682,7 +682,7 @@ export default function Settings() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {(users as any[]).map((user: any) => (
+                  {(users as any[])?.map((user: any) => (
                     <div key={user.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-3">
                         <div>
