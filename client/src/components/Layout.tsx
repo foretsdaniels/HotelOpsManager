@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Header from "./Header";
@@ -13,6 +14,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const { user, isLoading } = useRequireAuth();
   const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -31,8 +33,8 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <Sidebar />
+      <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className="main-content">
         {children}

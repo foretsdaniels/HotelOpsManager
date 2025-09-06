@@ -83,10 +83,19 @@ const adminItems = [
   },
 ];
 
-export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen: externalIsOpen, onClose }: SidebarProps = {}) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [location, navigate] = useLocation();
   const { user, logout } = useAuth();
+  
+  // Use external state if provided, otherwise use internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = onClose ? onClose : setInternalIsOpen;
 
   const hasAccess = (requiredRoles: string[]) => {
     return user?.role && requiredRoles.includes(user.role);
@@ -102,7 +111,7 @@ export default function Sidebar() {
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-20 lg:hidden"
-          onClick={() => setIsOpen(false)}
+          onClick={() => onClose ? onClose() : setInternalIsOpen(false)}
         />
       )}
       
@@ -120,7 +129,7 @@ export default function Sidebar() {
                   key={item.href}
                   onClick={() => {
                     navigate(item.href);
-                    setIsOpen(false);
+                    onClose ? onClose() : setInternalIsOpen(false);
                   }}
                   className={cn(
                     "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors",
@@ -149,7 +158,7 @@ export default function Sidebar() {
                   key={item.href}
                   onClick={() => {
                     navigate(item.href);
-                    setIsOpen(false);
+                    onClose ? onClose() : setInternalIsOpen(false);
                   }}
                   className={cn(
                     "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors",
@@ -170,7 +179,7 @@ export default function Sidebar() {
             <button
               onClick={() => {
                 logout();
-                setIsOpen(false);
+                onClose ? onClose() : setInternalIsOpen(false);
               }}
               className={cn(
                 "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors",

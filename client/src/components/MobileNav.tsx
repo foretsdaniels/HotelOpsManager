@@ -1,42 +1,28 @@
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { 
-  LayoutDashboard, 
   CheckSquare, 
   ClipboardCheck, 
-  Wrench, 
   BarChart3 
 } from "lucide-react";
 
 const mobileNavItems = [
   {
-    href: "/",
-    label: "Dashboard",
-    shortLabel: "Dashboard",
-    icon: LayoutDashboard,
+    href: "/room-status",
+    label: "Room Status",
+    shortLabel: "Rooms",
+    icon: CheckSquare,
   },
   {
     href: "/tasks",
-    label: "Tasks",
+    label: "Special Tasks",
     shortLabel: "Tasks",
-    icon: CheckSquare,
+    icon: ClipboardCheck,
   },
   {
     href: "/inspections",
     label: "Inspections",
     shortLabel: "Inspect",
-    icon: ClipboardCheck,
-  },
-  {
-    href: "/maintenance",
-    label: "Maintenance", 
-    shortLabel: "Maint",
-    icon: Wrench,
-  },
-  {
-    href: "/reports",
-    label: "Reports",
-    shortLabel: "Reports",
     icon: BarChart3,
   },
 ];
