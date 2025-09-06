@@ -110,7 +110,10 @@ export default function FrontDesk() {
     },
     onSuccess: () => {
       toast({ title: "Room assignments created successfully" });
+      // Invalidate all related queries to ensure data sync
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/room-comments"] });
       setShowRoomAssignment(false);
       setSelectedRooms([]);
       setAssigneeId("");
