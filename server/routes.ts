@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const task = await storage.createTask(taskData);
       
-      // Send email notification for task assignment
+      // Send email notification and WebSocket broadcast for task assignment
       if (task.assigneeId) {
         try {
           const assignee = await storage.getUser(task.assigneeId);
@@ -110,6 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (assignee) {
             await emailService.sendTaskAssignedNotification(task, assignee, room);
+            websocketService.broadcastTaskAssigned(task, assignee, room);
           }
         } catch (emailError) {
           console.error('Failed to send task assignment email:', emailError);
@@ -160,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
-      // Send email notification for task completion
+      // Send email notification and WebSocket broadcast for task completion
       if (updates.status === 'completed' && originalTask?.status !== 'completed') {
         try {
           const completedBy = await storage.getUser(req.user!.userId);
@@ -172,6 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (completedBy) {
             await emailService.sendTaskCompletedNotification(task, completedBy, supervisorUsers, room);
+            websocketService.broadcastTaskCompleted(task, completedBy, room);
           }
         } catch (emailError) {
           console.error('Failed to send task completion email:', emailError);
@@ -204,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
       
-      // Send email notification for task reassignment
+      // Send email notification and WebSocket broadcast for task reassignment
       if (assigneeId) {
         try {
           const assignee = await storage.getUser(assigneeId);
@@ -212,6 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (assignee) {
             await emailService.sendTaskAssignedNotification(task, assignee, room);
+            websocketService.broadcastTaskAssigned(task, assignee, room);
           }
         } catch (emailError) {
           console.error('Failed to send task reassignment email:', emailError);
@@ -295,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const inspection = await storage.updateInspection(id, updateData);
       
-      // Send email notification for inspection completion
+      // Send email notification and WebSocket broadcast for inspection completion
       if (updateData.signedAt && originalInspection && !originalInspection.signedAt) {
         try {
           const inspector = await storage.getUser(req.user!.userId);
@@ -308,6 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (inspector) {
             await emailService.sendInspectionCompletedNotification(inspection, inspector, recipients, room);
+            websocketService.broadcastInspectionCompleted(inspection, inspector, room);
           }
         } catch (emailError) {
           console.error('Failed to send inspection completion email:', emailError);
@@ -433,7 +437,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mediaUrl: req.body.mediaUrl,
       });
       
-      // Send panic alert emails
+      // Send panic alert emails and WebSocket broadcast
       try {
         const triggeredBy = await storage.getUser(req.user!.userId);
         if (triggeredBy) {
@@ -442,6 +446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             req.body.location || 'Unknown location', 
             recipients
           );
+          websocketService.broadcastPanicAlert(triggeredBy, req.body.location || 'Unknown location');
         }
       } catch (emailError) {
         console.error('Failed to send panic alert emails:', emailError);
@@ -489,7 +494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Send email notification for room status change
+      // Send email notification and WebSocket broadcast for room status change
       if (originalRoom && originalRoom.status !== status) {
         try {
           const updatedBy = await storage.getUser(req.user!.userId);
@@ -502,6 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (updatedBy) {
             await emailService.sendRoomStatusNotification(room, originalRoom.status || 'unknown', updatedBy, recipients);
+            websocketService.broadcastRoomStatusChange(room, originalRoom.status || 'unknown', updatedBy);
           }
         } catch (emailError) {
           console.error('Failed to send room status change email:', emailError);
@@ -970,6 +976,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/websocket-status", authenticateToken, requireRole(["site_admin"]), async (req, res) => {
+    try {
+      const stats = websocketService.getStats();
+      res.json(stats);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
+  
+  // Initialize WebSocket server
+  websocketService.initialize(httpServer);
+  
   return httpServer;
 }
