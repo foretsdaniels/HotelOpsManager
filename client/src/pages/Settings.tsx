@@ -43,6 +43,20 @@ export default function Settings() {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [editingRoom, setEditingRoom] = useState<any>(null);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [inspectionItems, setInspectionItems] = useState<any[]>([
+    { id: "1", title: "Bed linens clean and properly arranged", description: "Check for stains, wrinkles, and proper hospital corners", type: "room" },
+    { id: "2", title: "Bathroom cleanliness", description: "Toilet, shower, sink, mirror, and floor must be spotless", type: "room" },
+    { id: "3", title: "Amenities properly stocked", description: "Towels, toiletries, coffee, water bottles, etc.", type: "room" },
+    { id: "4", title: "Room temperature and HVAC", description: "Proper temperature control and air circulation", type: "room" },
+    { id: "5", title: "Electronics and lighting", description: "TV, lights, alarm clock, phone all functional", type: "room" },
+    { id: "6", title: "Safety and security", description: "Door locks, safe, fire safety equipment", type: "room" },
+    { id: "7", title: "Staff adherence to cleaning procedures", description: "Proper sequence and technique followed", type: "process" },
+    { id: "8", title: "Equipment and supplies availability", description: "All necessary tools and cleaning supplies present", type: "process" },
+    { id: "9", title: "Time management and efficiency", description: "Tasks completed within expected timeframe", type: "process" },
+    { id: "10", title: "Safety protocol compliance", description: "PPE usage and safety procedures followed", type: "process" }
+  ]);
+  const [editingInspectionItem, setEditingInspectionItem] = useState<any>(null);
+  const [newInspectionItem, setNewInspectionItem] = useState({ title: "", description: "", type: "room" });
 
   const [newRoom, setNewRoom] = useState({
     number: "",
@@ -183,10 +197,11 @@ export default function Settings() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="rooms">Rooms & Types</TabsTrigger>
           <TabsTrigger value="users">Users & Roles</TabsTrigger>
           <TabsTrigger value="tasks">Task Templates</TabsTrigger>
+          <TabsTrigger value="inspections">Inspection Items</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rooms" className="space-y-4">
@@ -224,14 +239,34 @@ export default function Settings() {
                           Floor {room.floor} • {room.squareFootage} sq ft
                         </span>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingRoom(room)}
-                        data-testid={`edit-room-${room.number}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingRoom(room)}
+                          data-testid={`edit-room-${room.number}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            if (confirm(`Are you sure you want to delete Room ${room.number}?`)) {
+                              try {
+                                await apiRequest("DELETE", `/api/rooms/${room.id}`);
+                                toast({ title: "Room deleted successfully" });
+                                queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+                              } catch (error) {
+                                toast({ title: "Failed to delete room", variant: "destructive" });
+                              }
+                            }
+                          }}
+                          data-testid={`delete-room-${room.number}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -298,14 +333,34 @@ export default function Settings() {
                           <Badge variant="destructive" className="text-xs">Alert Recipient</Badge>
                         )}
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingUser(user)}
-                        data-testid={`edit-user-${user.id}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingUser(user)}
+                          data-testid={`edit-user-${user.id}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            if (confirm(`Are you sure you want to delete ${user.name}?`)) {
+                              try {
+                                await apiRequest("DELETE", `/api/users/${user.id}`);
+                                toast({ title: "User deleted successfully" });
+                                queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+                              } catch (error) {
+                                toast({ title: "Failed to delete user", variant: "destructive" });
+                              }
+                            }
+                          }}
+                          data-testid={`delete-user-${user.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -360,6 +415,114 @@ export default function Settings() {
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="inspections" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <ListChecks className="h-5 w-5" />
+                  Room Inspection Items
+                </span>
+                <Button 
+                  onClick={() => setEditingInspectionItem({ title: "", description: "", type: "room", isNew: true })}
+                  data-testid="add-inspection-item-button"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Item
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {inspectionItems.filter(item => item.type === "room").map((item: any) => (
+                  <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <div className="font-semibold">{item.title}</div>
+                      <div className="text-sm text-muted-foreground">{item.description}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingInspectionItem(item)}
+                        data-testid={`edit-inspection-${item.id}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
+                            setInspectionItems(inspectionItems.filter(i => i.id !== item.id));
+                            toast({ title: "Inspection item deleted" });
+                          }
+                        }}
+                        data-testid={`delete-inspection-${item.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <ListChecks className="h-5 w-5" />
+                  Process Inspection Items
+                </span>
+                <Button 
+                  onClick={() => setEditingInspectionItem({ title: "", description: "", type: "process", isNew: true })}
+                  data-testid="add-process-item-button"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Item
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {inspectionItems.filter(item => item.type === "process").map((item: any) => (
+                  <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <div className="font-semibold">{item.title}</div>
+                      <div className="text-sm text-muted-foreground">{item.description}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingInspectionItem(item)}
+                        data-testid={`edit-process-${item.id}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
+                            setInspectionItems(inspectionItems.filter(i => i.id !== item.id));
+                            toast({ title: "Inspection item deleted" });
+                          }
+                        }}
+                        data-testid={`delete-process-${item.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -534,6 +697,245 @@ export default function Settings() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Room Modal */}
+      {editingRoom && (
+        <Dialog open={!!editingRoom} onOpenChange={() => setEditingRoom(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Room</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-room-number">Room Number</Label>
+                <Input
+                  id="edit-room-number"
+                  value={editingRoom.number}
+                  onChange={(e) => setEditingRoom({ ...editingRoom, number: e.target.value })}
+                  data-testid="edit-room-number-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-room-type">Room Type</Label>
+                <Select
+                  value={editingRoom.type}
+                  onValueChange={(value) => setEditingRoom({ ...editingRoom, type: value })}
+                >
+                  <SelectTrigger data-testid="edit-room-type-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROOM_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="edit-room-floor">Floor</Label>
+                <Input
+                  id="edit-room-floor"
+                  type="number"
+                  value={editingRoom.floor}
+                  onChange={(e) => setEditingRoom({ ...editingRoom, floor: parseInt(e.target.value) || 1 })}
+                  min="1"
+                  data-testid="edit-room-floor-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-room-sqft">Square Footage</Label>
+                <Input
+                  id="edit-room-sqft"
+                  type="number"
+                  value={editingRoom.squareFootage}
+                  onChange={(e) => setEditingRoom({ ...editingRoom, squareFootage: parseInt(e.target.value) || 320 })}
+                  min="100"
+                  data-testid="edit-room-sqft-input"
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={() => updateRoomMutation.mutate({ id: editingRoom.id, updates: editingRoom })}
+                  disabled={!editingRoom.number || !editingRoom.type || updateRoomMutation.isPending}
+                  data-testid="update-room-button"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateRoomMutation.isPending ? "Updating..." : "Update Room"}
+                </Button>
+                <Button variant="outline" onClick={() => setEditingRoom(null)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-user-name">Full Name</Label>
+                <Input
+                  id="edit-user-name"
+                  value={editingUser.name}
+                  onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                  data-testid="edit-user-name-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-user-email">Email</Label>
+                <Input
+                  id="edit-user-email"
+                  type="email"
+                  value={editingUser.email}
+                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  data-testid="edit-user-email-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-user-role">Role</Label>
+                <Select
+                  value={editingUser.role}
+                  onValueChange={(value) => setEditingUser({ ...editingUser, role: value })}
+                >
+                  <SelectTrigger data-testid="edit-user-role-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {USER_ROLES.map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="edit-user-phone">Phone Number</Label>
+                <Input
+                  id="edit-user-phone"
+                  value={editingUser.phone || ""}
+                  onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
+                  data-testid="edit-user-phone-input"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="edit-user-panic"
+                  checked={editingUser.canReceivePanicAlerts || false}
+                  onChange={(e) => setEditingUser({ ...editingUser, canReceivePanicAlerts: e.target.checked })}
+                  data-testid="edit-user-panic-checkbox"
+                />
+                <Label htmlFor="edit-user-panic">Can receive panic alerts</Label>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={() => updateUserMutation.mutate({ id: editingUser.id, updates: editingUser })}
+                  disabled={!editingUser.name || !editingUser.email || !editingUser.role || updateUserMutation.isPending}
+                  data-testid="update-user-button"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateUserMutation.isPending ? "Updating..." : "Update User"}
+                </Button>
+                <Button variant="outline" onClick={() => setEditingUser(null)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Edit/Create Inspection Item Modal */}
+      {editingInspectionItem && (
+        <Dialog open={!!editingInspectionItem} onOpenChange={() => setEditingInspectionItem(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editingInspectionItem.isNew ? "Add Inspection Item" : "Edit Inspection Item"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="inspection-title">Title</Label>
+                <Input
+                  id="inspection-title"
+                  value={editingInspectionItem.title}
+                  onChange={(e) => setEditingInspectionItem({ ...editingInspectionItem, title: e.target.value })}
+                  placeholder="Enter inspection item title"
+                  data-testid="inspection-title-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="inspection-description">Description</Label>
+                <Textarea
+                  id="inspection-description"
+                  value={editingInspectionItem.description}
+                  onChange={(e) => setEditingInspectionItem({ ...editingInspectionItem, description: e.target.value })}
+                  placeholder="Enter detailed description"
+                  rows={3}
+                  data-testid="inspection-description-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="inspection-type">Type</Label>
+                <Select
+                  value={editingInspectionItem.type}
+                  onValueChange={(value) => setEditingInspectionItem({ ...editingInspectionItem, type: value })}
+                >
+                  <SelectTrigger data-testid="inspection-type-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="room">Room Inspection</SelectItem>
+                    <SelectItem value="process">Process Inspection</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={() => {
+                    if (editingInspectionItem.isNew) {
+                      const newItem = {
+                        ...editingInspectionItem,
+                        id: Date.now().toString(),
+                      };
+                      setInspectionItems([...inspectionItems, newItem]);
+                      toast({ title: "Inspection item added successfully" });
+                    } else {
+                      setInspectionItems(inspectionItems.map(item => 
+                        item.id === editingInspectionItem.id ? editingInspectionItem : item
+                      ));
+                      toast({ title: "Inspection item updated successfully" });
+                    }
+                    setEditingInspectionItem(null);
+                  }}
+                  disabled={!editingInspectionItem.title || !editingInspectionItem.description}
+                  data-testid="save-inspection-button"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {editingInspectionItem.isNew ? "Add Item" : "Update Item"}
+                </Button>
+                <Button variant="outline" onClick={() => setEditingInspectionItem(null)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

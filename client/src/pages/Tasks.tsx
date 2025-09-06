@@ -11,6 +11,7 @@ import TaskCard from "@/components/TaskCard";
 import { Search, Filter, Plus } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import type { Task, User, Room } from "@shared/schema";
 
 export default function Tasks() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,13 +23,13 @@ export default function Tasks() {
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    type: "other",
-    priority: "medium",
-    assigneeId: "",
+    type: "other" as const,
+    priority: "medium" as const,
+    assigneeIds: [] as string[],
     roomId: "",
   });
 
-  const { data: tasks = [], isLoading } = useQuery({
+  const { data: tasks = [], isLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks", { 
       status: statusFilter === "all" ? undefined : statusFilter,
       type: typeFilter === "all" ? undefined : typeFilter,
@@ -36,11 +37,11 @@ export default function Tasks() {
     }],
   });
 
-  const { data: users = [] } = useQuery({
+  const { data: users = [] } = useQuery<User[]>({
     queryKey: ["/api/users"],
   });
 
-  const { data: rooms = [] } = useQuery({
+  const { data: rooms = [] } = useQuery<Room[]>({
     queryKey: ["/api/rooms"],
   });
 
@@ -260,7 +261,7 @@ export default function Tasks() {
             </div>
             <div>
               <Label htmlFor="task-type">Type</Label>
-              <Select value={newTask.type} onValueChange={(value) => setNewTask({ ...newTask, type: value })}>
+              <Select value={newTask.type} onValueChange={(value: any) => setNewTask({ ...newTask, type: value })}>
                 <SelectTrigger id="task-type">
                   <SelectValue />
                 </SelectTrigger>
@@ -274,7 +275,7 @@ export default function Tasks() {
             </div>
             <div>
               <Label htmlFor="task-priority">Priority</Label>
-              <Select value={newTask.priority} onValueChange={(value) => setNewTask({ ...newTask, priority: value })}>
+              <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
                 <SelectTrigger id="task-priority">
                   <SelectValue />
                 </SelectTrigger>
@@ -287,20 +288,35 @@ export default function Tasks() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="task-assignee">Assign To</Label>
-              <Select value={newTask.assigneeId} onValueChange={(value) => setNewTask({ ...newTask, assigneeId: value })}>
-                <SelectTrigger id="task-assignee">
-                  <SelectValue placeholder="Select assignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
-                  {users.map((user: any) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="task-assignees">Assign To (Multiple Selection)</Label>
+              <div className="space-y-2 border rounded-lg p-3 max-h-40 overflow-y-auto">
+                {users.map((user: User) => (
+                  <div key={user.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`assignee-${user.id}`}
+                      checked={newTask.assigneeIds.includes(user.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setNewTask({ ...newTask, assigneeIds: [...newTask.assigneeIds, user.id] });
+                        } else {
+                          setNewTask({ ...newTask, assigneeIds: newTask.assigneeIds.filter(id => id !== user.id) });
+                        }
+                      }}
+                      className="h-4 w-4"
+                      data-testid={`assignee-checkbox-${user.id}`}
+                    />
+                    <Label htmlFor={`assignee-${user.id}`} className="text-sm cursor-pointer">
+                      {user.name} - {user.role}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {newTask.assigneeIds.length > 0 && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  {newTask.assigneeIds.length} user(s) selected
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="task-room">Room (Optional)</Label>
@@ -334,11 +350,31 @@ export default function Tasks() {
                   }
                   
                   try {
-                    await apiRequest("POST", "/api/tasks", {
-                      ...newTask,
-                      assigneeId: newTask.assigneeId || undefined,
-                      roomId: newTask.roomId || undefined,
-                    });
+                    // Create a task for each assignee (or one unassigned task if no assignees)
+                    if (newTask.assigneeIds.length === 0) {
+                      await apiRequest("POST", "/api/tasks", {
+                        title: newTask.title,
+                        description: newTask.description,
+                        type: newTask.type,
+                        priority: newTask.priority,
+                        assigneeId: undefined,
+                        roomId: newTask.roomId || undefined,
+                      });
+                    } else {
+                      // Create multiple tasks, one for each assignee
+                      await Promise.all(
+                        newTask.assigneeIds.map((assigneeId) =>
+                          apiRequest("POST", "/api/tasks", {
+                            title: newTask.title,
+                            description: newTask.description,
+                            type: newTask.type,
+                            priority: newTask.priority,
+                            assigneeId,
+                            roomId: newTask.roomId || undefined,
+                          })
+                        )
+                      );
+                    }
                     
                     toast({
                       title: "Task Created",
@@ -350,9 +386,9 @@ export default function Tasks() {
                     setNewTask({
                       title: "",
                       description: "",
-                      type: "other",
-                      priority: "medium",
-                      assigneeId: "",
+                      type: "other" as const,
+                      priority: "medium" as const,
+                      assigneeIds: [],
                       roomId: "",
                     });
                   } catch (error) {
