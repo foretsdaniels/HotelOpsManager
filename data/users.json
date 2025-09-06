@@ -23,13 +23,35 @@
   },
   {
     "name": "lane",
-    "email": "lane@buccinn.com",
+    "email": "lane",
     "role": "room_attendant",
     "phone": "",
     "canReceivePanicAlerts": false,
     "passwordHash": "$2b$12$HZ/OhA4k25wVzwaFGHZlfeFzqnMfUhtQU0RY1bWmyYUTiMGe7bahW",
     "id": "51760e15-50d3-4a3f-9c8b-a9d470838da4",
     "createdAt": "2025-09-06T06:34:50.949Z",
-    "updatedAt": "2025-09-06T06:34:50.949Z"
+    "updatedAt": "2025-09-06T06:37:51.288Z"
+  },
+  {
+    "name": "Amy",
+    "email": "Amy",
+    "role": "room_attendant",
+    "phone": "",
+    "canReceivePanicAlerts": false,
+    "passwordHash": "$2b$12$5D.bhGLoVbtlCvdd7FGfI.neGppxRzELtfZOj.PnCGl0kgBsiPNvC",
+    "id": "858ebe37-cabd-4273-a151-af196bf32f74",
+    "createdAt": "2025-09-06T06:37:42.580Z",
+    "updatedAt": "2025-09-06T06:37:42.580Z"
+  },
+  {
+    "name": "Forest",
+    "email": "forest",
+    "role": "head_housekeeper",
+    "phone": "",
+    "canReceivePanicAlerts": true,
+    "passwordHash": "$2b$12$pX/TkpQvG5r7ken1Ey2pV.z7jsbJ4NHCkpBqLvVqyPtu9oqDFSuMC",
+    "id": "a34af63c-7080-4b48-ae26-fa5ad2bac58b",
+    "createdAt": "2025-09-06T06:38:20.220Z",
+    "updatedAt": "2025-09-06T06:38:20.220Z"
   }
 ]
