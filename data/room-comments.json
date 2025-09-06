@@ -1,12 +1,1 @@
-[
-  {
-    "roomId": "c74acf34-baac-444f-8b26-9894deb7dff0",
-    "userId": "system",
-    "comment": "Daily reset: Status changed from undefined to DIRTY",
-    "priority": "low",
-    "isResolved": false,
-    "id": "4c3a1eee-f907-4bb0-95bc-bfb61a879aad",
-    "createdAt": "2025-09-06T06:47:46.440Z",
-    "updatedAt": "2025-09-06T06:47:46.440Z"
-  }
-]
+[]
