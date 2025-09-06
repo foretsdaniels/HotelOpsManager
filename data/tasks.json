@@ -38,5 +38,25 @@
     "isDeleted": false,
     "createdAt": "2025-09-06T04:10:14.607Z",
     "updatedAt": "2025-09-06T04:10:14.607Z"
+  },
+  {
+    "title": "Clean Room 103",
+    "description": "Daily cleaning assignment for room 103",
+    "type": "cleaning",
+    "priority": "medium",
+    "roomId": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
+    "assigneeId": "5f10d969-eac5-4a1f-af20-35e1648c8024",
+    "createdById": "be940a5c-2175-47c2-960b-e77288404f77",
+    "id": "b85722ab-7321-469f-a3ca-794ebe65ca4d",
+    "status": null,
+    "dueAt": null,
+    "startedAt": null,
+    "pausedAt": null,
+    "finishedAt": null,
+    "verifiedById": null,
+    "notes": null,
+    "isDeleted": false,
+    "createdAt": "2025-09-06T04:32:50.113Z",
+    "updatedAt": "2025-09-06T04:32:50.113Z"
   }
 ]

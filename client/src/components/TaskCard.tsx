@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import StatusChip from "./StatusChip";
-import { User, DoorOpen, Clock, Calendar, Play, Pause, Check, MessageCircle, Camera, Users } from "lucide-react";
+import { User, DoorOpen, Clock, Calendar, Play, Pause, Check, MessageCircle, Camera, Users, Trash2, Eye } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, invalidateQueries } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +31,28 @@ interface TaskCardProps {
 export default function TaskCard({ task, assigneeName, roomNumber }: TaskCardProps) {
   const { toast } = useToast();
   const [showActions, setShowActions] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("PATCH", `/api/tasks/${task.id}`, { isDeleted: true });
+      return response.json();
+    },
+    onSuccess: () => {
+      invalidateQueries(["/api/tasks"]);
+      toast({
+        title: "Task Deleted",
+        description: "Task has been deleted successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const updateTaskMutation = useMutation({
     mutationFn: async (updates: any) => {
@@ -107,29 +131,49 @@ export default function TaskCard({ task, assigneeName, roomNumber }: TaskCardPro
   const duration = getDuration();
 
   return (
-    <Card className="hover:shadow-md transition-shadow" data-testid={`task-card-${task.id}`}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-1">
-              <h3 className="font-medium text-foreground" data-testid="task-title">
-                {task.title}
-              </h3>
-              <StatusChip status={task.status} />
-              {task.priority === "high" || task.priority === "urgent" && (
-                <span className="text-xs text-destructive font-medium">
-                  {task.priority.toUpperCase()}
-                </span>
+    <>
+      <Card 
+        className="hover:shadow-md transition-shadow cursor-pointer" 
+        data-testid={`task-card-${task.id}`}
+        onClick={() => setShowDetails(true)}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-1">
+                <h3 className="font-medium text-foreground" data-testid="task-title">
+                  {task.title}
+                </h3>
+                <StatusChip status={task.status} />
+                {task.priority === "high" || task.priority === "urgent" && (
+                  <span className="text-xs text-destructive font-medium">
+                    {task.priority.toUpperCase()}
+                  </span>
+                )}
+              </div>
+              {task.description && (
+                <p className="text-sm text-muted-foreground" data-testid="task-description">
+                  {task.description}
+                </p>
               )}
             </div>
-            {task.description && (
-              <p className="text-sm text-muted-foreground" data-testid="task-description">
-                {task.description}
-              </p>
-            )}
-          </div>
           
           <div className="flex items-center space-x-2 ml-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="touch-target w-8 h-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm(`Are you sure you want to delete this task?`)) {
+                  deleteTaskMutation.mutate();
+                }
+              }}
+              disabled={deleteTaskMutation.isPending}
+              data-testid={`delete-task-${task.id}`}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
             {task.status === "in_progress" && (
               <Button
                 variant="ghost"
@@ -246,5 +290,56 @@ export default function TaskCard({ task, assigneeName, roomNumber }: TaskCardPro
         </div>
       </CardContent>
     </Card>
+
+    {/* Task Details Dialog */}
+    <Dialog open={showDetails} onOpenChange={setShowDetails}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
+            <span>{task.title}</span>
+            <StatusChip status={task.status} />
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-medium mb-2">Description</h4>
+            <p className="text-sm text-muted-foreground">
+              {task.description || "No description provided"}
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h4 className="font-medium mb-2">Details</h4>
+              <div className="text-sm space-y-1">
+                <p><span className="text-muted-foreground">Type:</span> {task.type}</p>
+                <p><span className="text-muted-foreground">Priority:</span> {task.priority}</p>
+                <p><span className="text-muted-foreground">Status:</span> {task.status}</p>
+                {assigneeName && <p><span className="text-muted-foreground">Assigned to:</span> {assigneeName}</p>}
+                {roomNumber && <p><span className="text-muted-foreground">Room:</span> {roomNumber}</p>}
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-2">Timeline</h4>
+              <div className="text-sm space-y-1">
+                <p><span className="text-muted-foreground">Created:</span> {new Date(task.createdAt).toLocaleString()}</p>
+                {task.startedAt && <p><span className="text-muted-foreground">Started:</span> {new Date(task.startedAt).toLocaleString()}</p>}
+                {task.finishedAt && <p><span className="text-muted-foreground">Finished:</span> {new Date(task.finishedAt).toLocaleString()}</p>}
+                {task.dueAt && <p><span className="text-muted-foreground">Due:</span> {new Date(task.dueAt).toLocaleString()}</p>}
+                {duration && <p><span className="text-muted-foreground">Duration:</span> {duration}</p>}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setShowDetails(false)}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
