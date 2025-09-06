@@ -59,10 +59,17 @@ export default function RoomStatus() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
     });
 
+    const unsubscribeComments = subscribe('user_notification', (message) => {
+      if (message.data.comment || message.data.commentId) {
+        queryClient.invalidateQueries({ queryKey: ["/api/room-comments"] });
+      }
+    });
+
     return () => {
       unsubscribeRoomStatus();
       unsubscribeTaskAssigned();
       unsubscribeTaskCompleted();
+      unsubscribeComments();
     };
   }, [subscribe]);
 
