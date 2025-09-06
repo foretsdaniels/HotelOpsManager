@@ -7,6 +7,10 @@ import StatusChip from "@/components/StatusChip";
 import { useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { queryClient } from "@/lib/queryClient";
+import { QuickStatusButtons } from "@/components/QuickStatusButtons";
+import { apiRequest } from "@/services/api";
+import { useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { 
   CheckSquare, 
   Wrench, 
@@ -26,6 +30,7 @@ import { ActivityItem } from "@/types";
 
 export default function Dashboard() {
   const [location, navigate] = useLocation();
+  const { toast } = useToast();
   const { isConnected: wsConnected, subscribe } = useWebSocket();
   const { data: tasks = [] } = useQuery<any[]>({
     queryKey: ["/api/tasks"],
@@ -33,6 +38,10 @@ export default function Dashboard() {
 
   const { data: inspections = [] } = useQuery<any[]>({
     queryKey: ["/api/inspections"],
+  });
+
+  const { data: rooms = [] } = useQuery<any[]>({
+    queryKey: ["/api/rooms"],
   });
 
   // Subscribe to WebSocket updates for real-time dashboard updates
@@ -206,6 +215,53 @@ export default function Dashboard() {
                 </Button>
               );
             })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Room Status Updates */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Room Status Updates</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {rooms.slice(0, 3).map((room: any) => (
+              <div key={room.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">Room {room.number}</span>
+                  <StatusChip status={room.status} />
+                </div>
+                <QuickStatusButtons
+                  currentStatus={room.status}
+                  onStatusChange={async (status) => {
+                    try {
+                      await apiRequest("PATCH", `/api/rooms/${room.id}/status`, { status });
+                      toast({ 
+                        title: "Room status updated!", 
+                        description: `Room ${room.number} is now ${status}.`,
+                      });
+                      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+                    } catch (error: any) {
+                      toast({ 
+                        title: "Failed to update status", 
+                        description: error.message,
+                        variant: "destructive" 
+                      });
+                    }
+                  }}
+                  size="sm"
+                  showLabels={false}
+                />
+              </div>
+            ))}
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate("/room-status")}
+            >
+              View All Rooms →
+            </Button>
           </div>
         </CardContent>
       </Card>
