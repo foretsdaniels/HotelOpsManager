@@ -1,16 +1,32 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import TaskCard from "@/components/TaskCard";
 import { Search, Filter, Plus } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Tasks() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const { toast } = useToast();
+  
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    type: "other",
+    priority: "medium",
+    assigneeId: "",
+    roomId: "",
+  });
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["/api/tasks", { 
@@ -77,7 +93,10 @@ export default function Tasks() {
             Manage one-time, non-recurring special tasks outside normal room operations
           </p>
         </div>
-        <Button data-testid="create-task-button">
+        <Button 
+          data-testid="create-task-button"
+          onClick={() => setShowCreateTask(true)}
+        >
           <Plus className="h-4 w-4 mr-2" />
           New Special Task
         </Button>
@@ -127,7 +146,17 @@ export default function Tasks() {
                 </SelectContent>
               </Select>
               
-              <Button variant="outline" data-testid="apply-filters">
+              <Button 
+                variant="outline" 
+                data-testid="apply-filters"
+                onClick={() => {
+                  // Filters are already applied via state changes
+                  toast({
+                    title: "Filters Applied",
+                    description: "Tasks have been filtered based on your selection.",
+                  });
+                }}
+              >
                 <Filter className="h-4 w-4 mr-1" />
                 Filter
               </Button>
@@ -146,7 +175,11 @@ export default function Tasks() {
                   ? "No tasks match your current filters." 
                   : "No tasks available."}
               </div>
-              <Button className="mt-4" data-testid="create-first-task">
+              <Button 
+                className="mt-4" 
+                data-testid="create-first-task"
+                onClick={() => setShowCreateTask(true)}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Create First Special Task
               </Button>
@@ -198,6 +231,145 @@ export default function Tasks() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Create Task Dialog */}
+      <Dialog open={showCreateTask} onOpenChange={setShowCreateTask}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Special Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="task-title">Title</Label>
+              <Input
+                id="task-title"
+                value={newTask.title}
+                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                placeholder="Enter task title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="task-description">Description</Label>
+              <Textarea
+                id="task-description"
+                value={newTask.description}
+                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                placeholder="Enter task description"
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="task-type">Type</Label>
+              <Select value={newTask.type} onValueChange={(value) => setNewTask({ ...newTask, type: value })}>
+                <SelectTrigger id="task-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cleaning">Special Cleaning</SelectItem>
+                  <SelectItem value="alert">Alert</SelectItem>
+                  <SelectItem value="setup">Setup/Event</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="task-priority">Priority</Label>
+              <Select value={newTask.priority} onValueChange={(value) => setNewTask({ ...newTask, priority: value })}>
+                <SelectTrigger id="task-priority">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="task-assignee">Assign To</Label>
+              <Select value={newTask.assigneeId} onValueChange={(value) => setNewTask({ ...newTask, assigneeId: value })}>
+                <SelectTrigger id="task-assignee">
+                  <SelectValue placeholder="Select assignee" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Unassigned</SelectItem>
+                  {users.map((user: any) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="task-room">Room (Optional)</Label>
+              <Select value={newTask.roomId} onValueChange={(value) => setNewTask({ ...newTask, roomId: value })}>
+                <SelectTrigger id="task-room">
+                  <SelectValue placeholder="Select room" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Room</SelectItem>
+                  {rooms.map((room: any) => (
+                    <SelectItem key={room.id} value={room.id}>
+                      Room {room.number}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowCreateTask(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={async () => {
+                  if (!newTask.title) {
+                    toast({
+                      title: "Title Required",
+                      description: "Please enter a task title.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  try {
+                    await apiRequest("POST", "/api/tasks", {
+                      ...newTask,
+                      assigneeId: newTask.assigneeId || undefined,
+                      roomId: newTask.roomId || undefined,
+                    });
+                    
+                    toast({
+                      title: "Task Created",
+                      description: "The special task has been created successfully.",
+                    });
+                    
+                    queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+                    setShowCreateTask(false);
+                    setNewTask({
+                      title: "",
+                      description: "",
+                      type: "other",
+                      priority: "medium",
+                      assigneeId: "",
+                      roomId: "",
+                    });
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to create task. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Create Task
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
