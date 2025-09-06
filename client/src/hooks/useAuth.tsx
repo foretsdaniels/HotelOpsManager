@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       localStorage.setItem("token", token);
       setUser(userData);
-      navigate("/");
+      navigate("/room-status");
     } catch (error) {
       throw error;
     }
