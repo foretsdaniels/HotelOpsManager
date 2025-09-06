@@ -94,9 +94,9 @@ export default function Login() {
           
           <div className="mt-6 text-center text-sm text-muted-foreground">
             <div className="border-t pt-4">
-              <p>Demo credentials:</p>
-              <p><strong>Admin:</strong> admin@hotel.com / password</p>
-              <p><strong>Housekeeper:</strong> sarah@hotel.com / password</p>
+              <p>Made for The Buccaneer Inn</p>
+              <p><strong>BY:</strong> Forest D.</p>
+              <p><strong>Copyright:</strong> sarah@hotel.com / password</p>
             </div>
           </div>
         </CardContent>
