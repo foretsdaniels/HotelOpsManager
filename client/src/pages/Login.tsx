@@ -96,7 +96,7 @@ export default function Login() {
             <div className="border-t pt-4">
               <p>Made for The Buccaneer Inn</p>
               <p><strong>BY:</strong> Forest D.</p>
-              <p><strong>Copyright:</strong> sarah@hotel.com / password</p>
+              <p><strong>Copyright:</strong> 2025</p>
             </div>
           </div>
         </CardContent>

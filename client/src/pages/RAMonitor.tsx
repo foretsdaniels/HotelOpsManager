@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import StatusChip from "@/components/StatusChip";
 import { apiRequest, invalidateQueries } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { queryClient } from "@/lib/queryClient";
 import { Users, Clock, TrendingUp, UserCheck, ExternalLink } from "lucide-react";
 
 interface TaskForAssignment {
@@ -148,30 +150,91 @@ export default function RAMonitor() {
     return ra;
   };
 
-  // Mock recent activity data
-  const liveUpdates = [
-    {
-      id: "1",
-      message: "Sarah started Room 203 cleaning",
-      timestamp: "2 minutes ago",
-      status: "in_progress",
-      type: "start",
-    },
-    {
-      id: "2",
-      message: "Maria completed Room 105 maintenance check",
-      timestamp: "5 minutes ago",
-      status: "completed", 
-      type: "complete",
-    },
-    {
-      id: "3",
-      message: "Jennifer was assigned Room 301 cleaning",
-      timestamp: "8 minutes ago",
-      status: "pending",
-      type: "assign",
-    },
-  ];
+  // Subscribe to WebSocket for real-time updates
+  const { subscribe } = useWebSocket();
+  
+  useEffect(() => {
+    const unsubscribeTaskAssigned = subscribe('task_assigned', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+    
+    const unsubscribeTaskCompleted = subscribe('task_completed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+    
+    const unsubscribeRoomStatus = subscribe('room_status_changed', () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    });
+
+    return () => {
+      unsubscribeTaskAssigned();
+      unsubscribeTaskCompleted();
+      unsubscribeRoomStatus();
+    };
+  }, [subscribe]);
+
+  // Generate live updates from recent task activity
+  const liveUpdates: any[] = [];
+  
+  // Add recent task activities
+  const recentTasks = tasks.slice(0, 10);
+  recentTasks.forEach((task: any) => {
+    if (!task || !task.id) return;
+    
+    const taskUser = users.find((u: any) => u.id === task.assigneeId);
+    const room = rooms.find((r: any) => r.id === task.roomId);
+    const taskDate = new Date(task.updatedAt || task.createdAt);
+    const now = new Date();
+    const diffMinutes = Math.floor((now.getTime() - taskDate.getTime()) / 60000);
+    
+    let timestamp = "just now";
+    if (diffMinutes > 0) {
+      if (diffMinutes < 60) {
+        timestamp = `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+      } else if (diffMinutes < 1440) {
+        const hours = Math.floor(diffMinutes / 60);
+        timestamp = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      } else {
+        const days = Math.floor(diffMinutes / 1440);
+        timestamp = `${days} day${days > 1 ? 's' : ''} ago`;
+      }
+    }
+    
+    let message = "";
+    let type = "assign";
+    
+    if (task.status === 'completed') {
+      message = `${taskUser?.name || 'Staff'} completed ${task.title}`;
+      type = "complete";
+    } else if (task.status === 'in_progress') {
+      message = `${taskUser?.name || 'Staff'} started ${task.title}`;
+      type = "start";
+    } else if (task.assigneeId) {
+      message = `${taskUser?.name || 'Staff'} was assigned ${task.title}`;
+      type = "assign";
+    }
+    
+    if (message) {
+      if (room) {
+        message += ` - Room ${room.number}`;
+      }
+      
+      liveUpdates.push({
+        id: task.id,
+        message,
+        timestamp,
+        status: task.status || 'pending',
+        type,
+      });
+    }
+  });
+  
+  // Sort by most recent and limit to 5
+  liveUpdates.sort((a, b) => {
+    const aMinutes = parseInt(a.timestamp) || 0;
+    const bMinutes = parseInt(b.timestamp) || 0;
+    return aMinutes - bMinutes;
+  }).slice(0, 5);
 
   const canManageRA = user?.role && ["site_admin", "head_housekeeper", "front_desk_manager"].includes(user.role);
 
