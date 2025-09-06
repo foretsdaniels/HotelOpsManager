@@ -53,8 +53,26 @@ export default function RoomStatus() {
     queryKey: ["/api/tasks"],
   });
 
+  // Filter rooms based on user role and assignment
+  const userRooms = rooms.filter((room: Room) => {
+    // Admin, head housekeeper, and front desk manager see all rooms
+    if (user?.role === "site_admin" || user?.role === "head_housekeeper" || user?.role === "front_desk_manager") {
+      return true;
+    }
+    
+    // Room attendants and maintenance only see their assigned rooms
+    const roomTasks = tasks.filter((task: any) => 
+      task.roomId === room.id && 
+      !task.isDeleted && 
+      task.assigneeId === user?.id &&
+      (task.status === "pending" || task.status === "in_progress")
+    );
+    
+    return roomTasks.length > 0;
+  });
+
   // Filter and search logic
-  const filteredRooms = rooms.filter((room: Room) => {
+  const filteredRooms = userRooms.filter((room: Room) => {
     const matchesSearch = room.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          room.type.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || room.status === statusFilter;
@@ -63,15 +81,15 @@ export default function RoomStatus() {
     return matchesSearch && matchesStatus && matchesFloor;
   });
 
-  // Get unique floors for filter dropdown
-  const floors = Array.from(new Set(rooms.map((room: Room) => room.floor))).sort((a: any, b: any) => a - b);
+  // Get unique floors for filter dropdown (based on visible rooms)
+  const floors = Array.from(new Set(userRooms.map((room: Room) => room.floor))).sort((a: any, b: any) => a - b);
 
-  // Room status counts for dashboard
+  // Room status counts for dashboard (based on visible rooms)
   const statusCounts = STATUS_FILTERS.reduce((acc, status) => {
     if (status.value === "all") {
-      acc[status.value] = rooms.length;
+      acc[status.value] = userRooms.length;
     } else {
-      acc[status.value] = rooms.filter((room: Room) => room.status === status.value).length;
+      acc[status.value] = userRooms.filter((room: Room) => room.status === status.value).length;
     }
     return acc;
   }, {} as Record<string, number>);
