@@ -34,10 +34,13 @@ export default function RoomComments({ roomId, roomNumber }: RoomCommentsProps) 
     priority: "low",
   });
 
-  const { data: comments = [], isLoading } = useQuery({
+  const { data: commentsData, isLoading } = useQuery({
     queryKey: ["/api/room-comments", roomId],
     queryFn: () => apiRequest("GET", `/api/room-comments?roomId=${roomId}`),
   });
+
+  // Ensure comments is always an array
+  const comments = Array.isArray(commentsData) ? commentsData : [];
 
   const { data: users = [] } = useQuery({
     queryKey: ["/api/users"],
