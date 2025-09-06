@@ -56,7 +56,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       localStorage.setItem("token", token);
       setUser(userData);
-      navigate("/room-status");
+      
+      // Small delay to ensure state is updated before navigation
+      setTimeout(() => {
+        navigate("/room-status");
+      }, 100);
     } catch (error) {
       throw error;
     }

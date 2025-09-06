@@ -23,8 +23,11 @@ export async function apiRequest(
 
   if (!response.ok) {
     if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      // Only redirect to login if we're not already on the login page
+      if (!window.location.pathname.includes('/login')) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
     }
     const errorText = await response.text();
     throw new Error(errorText || response.statusText);
