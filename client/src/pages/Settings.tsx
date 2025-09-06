@@ -21,7 +21,11 @@ import {
   Edit, 
   Trash2,
   Save,
-  X
+  X,
+  Mail,
+  CheckCircle,
+  XCircle,
+  Send
 } from "lucide-react";
 
 // Room types as specified by user
@@ -58,6 +62,9 @@ export default function Settings() {
   ]);
   const [editingInspectionItem, setEditingInspectionItem] = useState<any>(null);
   const [newInspectionItem, setNewInspectionItem] = useState({ title: "", description: "", type: "room" });
+  const [testEmail, setTestEmail] = useState("");
+  const [testTemplate, setTestTemplate] = useState("taskAssigned");
+  const [testingEmail, setTestingEmail] = useState(false);
 
   const [newRoom, setNewRoom] = useState({
     number: "",
@@ -93,6 +100,11 @@ export default function Settings() {
 
   const { data: tasks = [], isLoading: loadingTasks } = useQuery({
     queryKey: ["/api/tasks"],
+  });
+
+  const { data: emailStatus, isLoading: loadingEmailStatus } = useQuery({
+    queryKey: ["/api/admin/email-status"],
+    enabled: user?.role === "site_admin",
   });
 
   // Mutations
@@ -173,6 +185,31 @@ export default function Settings() {
     },
   });
 
+  const testEmailMutation = useMutation({
+    mutationFn: ({ email, templateType }: { email: string; templateType: string }) =>
+      apiRequest("POST", "/api/admin/test-email", { email, templateType }),
+    onSuccess: () => {
+      toast({ title: "Test email sent successfully" });
+      setTestingEmail(false);
+    },
+    onError: () => {
+      toast({ title: "Failed to send test email", variant: "destructive" });
+      setTestingEmail(false);
+    },
+  });
+
+  const updateEmailPreferencesMutation = useMutation({
+    mutationFn: ({ userId, preferences }: { userId: string; preferences: any }) =>
+      apiRequest("PATCH", `/api/users/${userId}/email-preferences`, preferences),
+    onSuccess: () => {
+      toast({ title: "Email preferences updated" });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to update email preferences", variant: "destructive" });
+    },
+  });
+
   // Only allow site_admin to access settings
   if (user?.role !== "site_admin") {
     return (
@@ -198,11 +235,12 @@ export default function Settings() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="rooms">Rooms & Types</TabsTrigger>
           <TabsTrigger value="users">Users & Roles</TabsTrigger>
           <TabsTrigger value="tasks">Task Templates</TabsTrigger>
           <TabsTrigger value="inspections">Inspection Items</TabsTrigger>
+          <TabsTrigger value="email">Email Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rooms" className="space-y-4">
@@ -524,6 +562,203 @@ export default function Settings() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Email Settings Tab */}
+        <TabsContent value="email" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Email Configuration Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingEmailStatus ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="h-8 bg-muted rounded"></div>
+                  <div className="h-6 bg-muted rounded w-3/4"></div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    {emailStatus?.connected ? (
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-600" />
+                    )}
+                    <span className="font-medium">
+                      Email Service: {emailStatus?.connected ? "Connected" : "Not Connected"}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">SMTP Host:</span>
+                      <p className="text-muted-foreground">{emailStatus?.config?.host}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">Port:</span>
+                      <p className="text-muted-foreground">{emailStatus?.config?.port}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">From Address:</span>
+                      <p className="text-muted-foreground">{emailStatus?.config?.from}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5" />
+                Test Email Configuration
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="test-email">Test Email Address</Label>
+                  <Input
+                    id="test-email"
+                    type="email"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    placeholder="Enter email to test"
+                    data-testid="test-email-input"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="test-template">Email Template</Label>
+                  <Select value={testTemplate} onValueChange={setTestTemplate}>
+                    <SelectTrigger data-testid="test-template-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="taskAssigned">Task Assignment</SelectItem>
+                      <SelectItem value="taskCompleted">Task Completion</SelectItem>
+                      <SelectItem value="roomStatusChanged">Room Status Change</SelectItem>
+                      <SelectItem value="inspectionCompleted">Inspection Completed</SelectItem>
+                      <SelectItem value="panicAlert">Panic Alert</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <Button
+                onClick={() => {
+                  if (testEmail && testTemplate) {
+                    setTestingEmail(true);
+                    testEmailMutation.mutate({ email: testEmail, templateType: testTemplate });
+                  }
+                }}
+                disabled={!testEmail || !testTemplate || testingEmail}
+                data-testid="send-test-email-button"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {testingEmail ? "Sending..." : "Send Test Email"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                User Email Preferences
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingUsers ? (
+                <div className="animate-pulse space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-16 bg-muted rounded"></div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {(users as any[]).map((user: any) => (
+                    <div key={user.id} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <div className="font-semibold">{user.name}</div>
+                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                        </div>
+                        <Badge variant="outline">
+                          {USER_ROLES.find(r => r.value === user.role)?.label || user.role}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={user.emailTaskAssigned || false}
+                            onChange={(e) => {
+                              updateEmailPreferencesMutation.mutate({
+                                userId: user.id,
+                                preferences: { emailTaskAssigned: e.target.checked }
+                              });
+                            }}
+                            className="rounded"
+                          />
+                          <span>Task Assigned</span>
+                        </label>
+                        
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={user.emailTaskCompleted || false}
+                            onChange={(e) => {
+                              updateEmailPreferencesMutation.mutate({
+                                userId: user.id,
+                                preferences: { emailTaskCompleted: e.target.checked }
+                              });
+                            }}
+                            className="rounded"
+                          />
+                          <span>Task Completed</span>
+                        </label>
+                        
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={user.emailRoomStatusChanged || false}
+                            onChange={(e) => {
+                              updateEmailPreferencesMutation.mutate({
+                                userId: user.id,
+                                preferences: { emailRoomStatusChanged: e.target.checked }
+                              });
+                            }}
+                            className="rounded"
+                          />
+                          <span>Room Changes</span>
+                        </label>
+                        
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={user.emailInspectionCompleted || false}
+                            onChange={(e) => {
+                              updateEmailPreferencesMutation.mutate({
+                                userId: user.id,
+                                preferences: { emailInspectionCompleted: e.target.checked }
+                              });
+                            }}
+                            className="rounded"
+                          />
+                          <span>Inspections</span>
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
