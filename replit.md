@@ -42,9 +42,7 @@ Preferred communication style: Simple, everyday language.
 ### Key Features Architecture
 - **Task Management**: CRUD operations with assignment, status tracking, and soft delete/restore
 - **Inspection System**: Room and process inspections with checklists, photos, and digital signatures
-- **Maintenance Workflows**: Work orders with priority/SLA tracking and preventive maintenance scheduling
 - **Reporting Engine**: RA average times, inspection reports, and square-foot based productivity metrics
-- **Lost & Found**: Item tracking with automated expiration and bulk clearing capabilities
 
 ## External Dependencies
 
