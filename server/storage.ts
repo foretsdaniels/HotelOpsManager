@@ -38,6 +38,7 @@ export interface IStorage {
   getRoomByNumber(number: string): Promise<Room | undefined>;
   createRoom(room: InsertRoom): Promise<Room>;
   updateRoom(id: string, updates: Partial<Room>): Promise<Room | undefined>;
+  deleteRoom(id: string): Promise<boolean>;
   listRooms(): Promise<Room[]>;
   
   // Tasks
@@ -434,6 +435,15 @@ export class MemStorage implements IStorage {
     this.data.rooms.set(id, updatedRoom);
     await this.saveData('rooms');
     return updatedRoom;
+  }
+
+  async deleteRoom(id: string): Promise<boolean> {
+    const room = this.data.rooms.get(id);
+    if (!room) return false;
+    
+    this.data.rooms.delete(id);
+    await this.saveData('rooms');
+    return true;
   }
 
   async listRooms(): Promise<Room[]> {

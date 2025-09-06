@@ -521,6 +521,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/rooms/:id", authenticateToken, requireRole(["site_admin"]), async (req, res) => {
+    try {
+      const room = await storage.updateRoom(req.params.id, req.body);
+      if (!room) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+      res.json(room);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/rooms/:id", authenticateToken, requireRole(["site_admin"]), async (req, res) => {
+    try {
+      const deleted = await storage.deleteRoom(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+      res.status(200).json({ message: "Room deleted successfully" });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // User routes
   app.get("/api/users", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req, res) => {
     try {
