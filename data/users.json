@@ -1,14 +1,14 @@
 [
   {
     "name": "Site Administrator",
-    "email": "admin@hotel.com",
+    "email": "admin@buccinn.com",
     "role": "site_admin",
-    "passwordHash": "$2b$12$eOmXEYpxifG8EbNZmGzzjeckuKKb/OYivyiuY93BZhpZVUZJsPIcK",
+    "passwordHash": "$2b$12$5AVyVPtmP4URAtt6bqh5E.2fjMs8nagUNrHwZ7gfBLgka8NPPstvu",
     "phone": "+1-555-0101",
     "canReceivePanicAlerts": true,
     "id": "be940a5c-2175-47c2-960b-e77288404f77",
     "createdAt": "2025-09-06T02:17:57.564Z",
-    "updatedAt": "2025-09-06T02:17:57.564Z"
+    "updatedAt": "2025-09-06T06:59:57.713Z"
   },
   {
     "name": "Front Desk",
