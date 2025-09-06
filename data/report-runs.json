@@ -1,0 +1,35 @@
+[
+  {
+    "type": "daily_reset",
+    "params": {
+      "date": "2025-09-06"
+    },
+    "results": {
+      "date": "2025-09-06",
+      "roomStatuses": [],
+      "tasksSummary": {
+        "totalTasks": 2,
+        "completedTasks": 0,
+        "pendingTasks": 0
+      },
+      "workOrdersSummary": {
+        "totalWorkOrders": 0,
+        "completedWorkOrders": 0,
+        "pendingWorkOrders": 0
+      },
+      "roomMetrics": {
+        "totalRooms": 0,
+        "readyRooms": 0,
+        "rollRooms": 0,
+        "outRooms": 0,
+        "cleanInspectedRooms": 0,
+        "dirtyRooms": 0,
+        "maintenanceRooms": 0,
+        "outOfOrderRooms": 0
+      },
+      "resetTime": "2025-09-06T04:23:41.303Z"
+    },
+    "id": "488fcaa8-43c5-45a3-886c-9850d3062732",
+    "createdAt": "2025-09-06T04:23:41.303Z"
+  }
+]

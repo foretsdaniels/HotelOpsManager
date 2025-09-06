@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "number": "103",
+    "type": "KING",
+    "floor": 1,
+    "squareFootage": 320,
+    "id": "d6ac269e-8bbe-45cf-b94d-94559e7024f2",
+    "status": "ready",
+    "createdAt": "2025-09-06T04:24:04.127Z",
+    "updatedAt": "2025-09-06T04:32:36.361Z"
+  }
+]

@@ -603,7 +603,7 @@ export default function FrontDesk() {
                   <div className="text-sm text-muted-foreground space-y-1">
                     <p>Floor: {selectedRoom.floor}</p>
                     <p>Square Footage: {selectedRoom.squareFootage} sq ft</p>
-                    <p>Status: {selectedRoom.status.replace('_', ' ')}</p>
+                    <p>Status: {selectedRoom.status ? selectedRoom.status.replace('_', ' ') : 'Not set'}</p>
                   </div>
                 </div>
                 <div>
