@@ -235,6 +235,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/inspections/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      const inspection = await storage.updateInspection(id, updateData);
+      res.json(inspection);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/inspections/:id", authenticateToken, requireRole(["site_admin", "head_housekeeper"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteInspection(id);
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Work order routes
   app.post("/api/workorders", authenticateToken, requireRole(["site_admin", "head_housekeeper", "maintenance", "front_desk_manager"]), async (req, res) => {
     try {

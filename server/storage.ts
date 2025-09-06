@@ -57,6 +57,8 @@ export interface IStorage {
   // Inspections
   getInspection(id: string): Promise<Inspection | undefined>;
   createInspection(inspection: InsertInspection): Promise<Inspection>;
+  updateInspection(id: string, updates: Partial<Inspection>): Promise<Inspection>;
+  deleteInspection(id: string): Promise<void>;
   listInspections(filters?: { kind?: string; roomId?: string }): Promise<Inspection[]>;
   
   // Work Orders
@@ -564,6 +566,27 @@ export class MemStorage implements IStorage {
     this.data.inspections.set(id, inspection);
     await this.saveData('inspections');
     return inspection;
+  }
+
+  async updateInspection(id: string, updates: Partial<Inspection>): Promise<Inspection> {
+    const inspection = this.data.inspections.get(id);
+    if (!inspection) {
+      throw new Error("Inspection not found");
+    }
+    
+    const updatedInspection = { ...inspection, ...updates };
+    this.data.inspections.set(id, updatedInspection);
+    await this.saveData('inspections');
+    return updatedInspection;
+  }
+
+  async deleteInspection(id: string): Promise<void> {
+    if (!this.data.inspections.has(id)) {
+      throw new Error("Inspection not found");
+    }
+    
+    this.data.inspections.delete(id);
+    await this.saveData('inspections');
   }
 
   async listInspections(filters?: { kind?: string; roomId?: string }): Promise<Inspection[]> {

@@ -685,7 +685,7 @@ export default function Inspections() {
                   </div>
                 </div>
               </div>
-              {selectedInspection.checklist && (
+              {selectedInspection.checklist && Array.isArray(selectedInspection.checklist) && (
                 <div className="space-y-2">
                   <h3 className="font-medium">Checklist Items</h3>
                   {selectedInspection.checklist.map((item: any) => (
