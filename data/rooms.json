@@ -3,11 +3,11 @@
     "number": "101",
     "type": "Standard",
     "floor": 1,
-    "status": "dirty",
+    "status": "ready",
     "squareFootage": 320,
     "id": "c3c26101-3e3a-4c10-b75d-1ec0f92400a6",
     "createdAt": "2025-09-06T02:17:57.593Z",
-    "updatedAt": "2025-09-06T02:17:57.593Z"
+    "updatedAt": "2025-09-06T03:52:19.382Z"
   },
   {
     "number": "102",
