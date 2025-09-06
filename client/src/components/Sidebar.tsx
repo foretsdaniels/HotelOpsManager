@@ -81,6 +81,12 @@ const adminItems = [
     icon: Settings,
     roles: ["site_admin"],
   },
+  {
+    href: "/daily-reset",
+    label: "Daily Reset",
+    icon: AlertCircle,
+    roles: ["site_admin"],
+  },
 ];
 
 export default function Sidebar() {

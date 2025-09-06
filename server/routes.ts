@@ -436,6 +436,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Daily Reset Routes
+  app.post("/api/daily-reset/manual", authenticateToken, requireRole(["site_admin"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { dailyResetService } = await import("./dailyReset");
+      const report = await dailyResetService.triggerManualReset();
+      res.json(report);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/daily-reset/last-report", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req, res) => {
+    try {
+      const { dailyResetService } = await import("./dailyReset");
+      const report = await dailyResetService.getLastResetReport();
+      res.json(report);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Report routes
   app.get("/api/reports/ra-average-times", authenticateToken, requireRole(["site_admin", "head_housekeeper", "front_desk_manager"]), async (req, res) => {
     try {

@@ -14,7 +14,7 @@ export const workOrderStatusEnum = pgEnum("work_order_status", ["pending", "in_p
 export const pmFrequencyEnum = pgEnum("pm_frequency", ["days_counter", "days_rented"]);
 export const pmStatusEnum = pgEnum("pm_status", ["pending", "in_progress", "completed", "skipped"]);
 export const lostFoundStatusEnum = pgEnum("lost_found_status", ["logged", "stored", "returned", "expired_cleared"]);
-export const reportTypeEnum = pgEnum("report_type", ["ra_average_times", "inspections", "square_foot"]);
+export const reportTypeEnum = pgEnum("report_type", ["ra_average_times", "inspections", "square_foot", "daily_reset"]);
 
 // Users table
 export const users = pgTable("users", {

@@ -16,6 +16,7 @@ import PanicLog from "@/pages/PanicLog";
 import Settings from "@/pages/Settings";
 import FrontDesk from "@/pages/FrontDesk";
 import RoomStatus from "@/pages/RoomStatus";
+import DailyReset from "@/pages/DailyReset";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -70,6 +71,11 @@ function Router() {
       <Route path="/room-status" component={() => (
         <Layout>
           <RoomStatus />
+        </Layout>
+      )} />
+      <Route path="/daily-reset" component={() => (
+        <Layout>
+          <DailyReset />
         </Layout>
       )} />
       <Route component={NotFound} />
