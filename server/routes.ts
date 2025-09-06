@@ -100,6 +100,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const task = await storage.createTask(taskData);
+      
+      // Send email notification for task assignment
+      if (task.assigneeId) {
+        try {
+          const assignee = await storage.getUser(task.assigneeId);
+          const room = task.roomId ? await storage.getRoom(task.roomId) : undefined;
+          
+          if (assignee) {
+            await emailService.sendTaskAssignedNotification(task, assignee, room);
+          }
+        } catch (emailError) {
+          console.error('Failed to send task assignment email:', emailError);
+        }
+      }
+      
       res.status(201).json(task);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -135,13 +150,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/tasks/:id", authenticateToken, async (req, res) => {
+  app.patch("/api/tasks/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const updates = req.body;
+      const originalTask = await storage.getTask(req.params.id);
       const task = await storage.updateTask(req.params.id, updates);
       if (!task) {
         return res.status(404).json({ error: "Task not found" });
       }
+
+      // Send email notification for task completion
+      if (updates.status === 'completed' && originalTask?.status !== 'completed') {
+        try {
+          const completedBy = await storage.getUser(req.user!.userId);
+          const supervisors = await storage.listUsers();
+          const supervisorUsers = supervisors.filter(user => 
+            user.role === 'site_admin' || user.role === 'head_housekeeper'
+          );
+          const room = task.roomId ? await storage.getRoom(task.roomId) : undefined;
+          
+          if (completedBy) {
+            await emailService.sendTaskCompletedNotification(task, completedBy, supervisorUsers, room);
+          }
+        } catch (emailError) {
+          console.error('Failed to send task completion email:', emailError);
+        }
+      }
+
       res.json(task);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -167,6 +202,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!task) {
         return res.status(404).json({ error: "Task not found" });
       }
+      
+      // Send email notification for task reassignment
+      if (assigneeId) {
+        try {
+          const assignee = await storage.getUser(assigneeId);
+          const room = task.roomId ? await storage.getRoom(task.roomId) : undefined;
+          
+          if (assignee) {
+            await emailService.sendTaskAssignedNotification(task, assignee, room);
+          }
+        } catch (emailError) {
+          console.error('Failed to send task reassignment email:', emailError);
+        }
+      }
+      
       res.json(task);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -240,8 +290,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const updateData = req.body;
+      const originalInspection = await storage.getInspection(id);
       
       const inspection = await storage.updateInspection(id, updateData);
+      
+      // Send email notification for inspection completion
+      if (updateData.signedAt && originalInspection && !originalInspection.signedAt) {
+        try {
+          const inspector = await storage.getUser(req.user!.userId);
+          const relevantUsers = await storage.listUsers();
+          const recipients = relevantUsers.filter(user => 
+            user.role === 'site_admin' || 
+            user.role === 'head_housekeeper'
+          );
+          const room = inspection.roomId ? await storage.getRoom(inspection.roomId) : undefined;
+          
+          if (inspector) {
+            await emailService.sendInspectionCompletedNotification(inspection, inspector, recipients, room);
+          }
+        } catch (emailError) {
+          console.error('Failed to send inspection completion email:', emailError);
+        }
+      }
+      
       res.json(inspection);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -361,8 +432,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mediaUrl: req.body.mediaUrl,
       });
       
-      // Here you would typically send notifications to recipients
-      // For now, we'll just log the event
+      // Send panic alert emails
+      try {
+        const triggeredBy = await storage.getUser(req.user!.userId);
+        if (triggeredBy) {
+          await emailService.sendPanicAlertNotification(
+            triggeredBy, 
+            req.body.location || 'Unknown location', 
+            recipients
+          );
+        }
+      } catch (emailError) {
+        console.error('Failed to send panic alert emails:', emailError);
+      }
+      
       console.log(`Panic alert triggered by ${req.user!.name} at ${new Date().toISOString()}`);
       
       res.status(201).json(panicEvent);
@@ -384,6 +467,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/rooms/:id/status", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const { status, notes } = req.body;
+      const originalRoom = await storage.getRoom(req.params.id);
       const room = await storage.updateRoom(req.params.id, { 
         status, 
         updatedAt: new Date() 
@@ -402,6 +486,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           priority: "low",
           isResolved: false,
         });
+      }
+
+      // Send email notification for room status change
+      if (originalRoom && originalRoom.status !== status) {
+        try {
+          const updatedBy = await storage.getUser(req.user!.userId);
+          const relevantUsers = await storage.listUsers();
+          const recipients = relevantUsers.filter(user => 
+            user.role === 'site_admin' || 
+            user.role === 'head_housekeeper' || 
+            user.role === 'front_desk_manager'
+          );
+          
+          if (updatedBy) {
+            await emailService.sendRoomStatusNotification(room, originalRoom.status || 'unknown', updatedBy, recipients);
+          }
+        } catch (emailError) {
+          console.error('Failed to send room status change email:', emailError);
+        }
       }
 
       res.json(room);
@@ -790,6 +893,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
     
     res.json(openApiDoc);
+  });
+
+  // Email management routes
+  app.post("/api/admin/test-email", authenticateToken, requireRole(["site_admin"]), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { email, templateType } = req.body;
+      
+      if (!email || !templateType) {
+        return res.status(400).json({ error: "Email and template type are required" });
+      }
+
+      const user = await storage.getUser(req.user!.userId);
+      if (!user) {
+        return res.status(400).json({ error: "User not found" });
+      }
+
+      // Test email with sample data
+      await emailService.sendEmail(email, templateType, {
+        user: {
+          ...user,
+          name: "Test User",
+          email: email
+        },
+        task: {
+          title: "Test Task",
+          description: "This is a test task for email notification",
+          priority: "medium",
+          dueAt: "2024-01-15",
+          roomNumber: "101"
+        }
+      });
+
+      res.json({ success: true, message: "Test email sent successfully" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/email-status", authenticateToken, requireRole(["site_admin"]), async (req, res) => {
+    try {
+      const isConnected = await emailService.testConnection();
+      res.json({ 
+        connected: isConnected,
+        config: {
+          host: process.env.SMTP_HOST || 'Not configured',
+          port: process.env.SMTP_PORT || 'Not configured',
+          from: process.env.SMTP_FROM || 'Not configured'
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/users/:id/email-preferences", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const preferences = req.body;
+      
+      // Users can only update their own preferences unless they're admin
+      if (id !== req.user!.userId && !["site_admin"].includes(req.user!.role)) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const user = await storage.updateUser(id, preferences);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { passwordHash, ...userResponse } = user;
+      res.json(userResponse);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   const httpServer = createServer(app);
